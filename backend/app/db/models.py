@@ -34,6 +34,17 @@ def _uuid():
     return uuid.uuid4()
 
 
+def _pg_enum(enum_cls, name):
+    """Every enum here is defined as `member_name = "Human Readable Value"`
+    (e.g. SourceCategory.press_statement = "Press Statement"). Postgres stores
+    the *value* ("Press Statement"), matching the migration's CREATE TYPE, but
+    SQLAlchemy's Enum() sends the member *name* by default — a real mismatch
+    caught live while testing specs/002 against sources with a non-matching
+    name/value pair (specs/009's UserRole happened to have name == value, which
+    is why Task 1's testing never surfaced this). values_callable fixes it."""
+    return Enum(enum_cls, name=name, values_callable=lambda obj: [e.value for e in obj])
+
+
 class SourceCategory(str, enum.Enum):
     statistical_release = "Statistical Release"
     publication = "Publication"
@@ -88,13 +99,15 @@ class Source(Base):
     source_id = Column(UUID(as_uuid=True), primary_key=True, default=_uuid)
     title = Column(String, nullable=False)
     url = Column(String, nullable=False)
-    category = Column(Enum(SourceCategory), nullable=False)
+    category = Column(_pg_enum(SourceCategory, "sourcecategory"), nullable=False)
     published_date = Column(Date, nullable=False)
     ingested_date = Column(DateTime, default=datetime.utcnow, nullable=False)
     version = Column(Integer, default=1, nullable=False)
     superseded_by = Column(UUID(as_uuid=True), ForeignKey("sources.source_id"), nullable=True)
     approved_by = Column(UUID(as_uuid=True), ForeignKey("users.user_id"), nullable=True)
-    confidentiality_tag = Column(Enum(ConfidentialityTag), default=ConfidentialityTag.public, nullable=False)
+    confidentiality_tag = Column(
+        _pg_enum(ConfidentialityTag, "confidentialitytag"), default=ConfidentialityTag.public, nullable=False
+    )
     checksum = Column(String, nullable=False)
     retention_review_date = Column(Date, nullable=True)
 
@@ -123,7 +136,7 @@ class User(Base):
     user_id = Column(UUID(as_uuid=True), primary_key=True, default=_uuid)
     name = Column(String, nullable=False)
     email = Column(String, unique=True, nullable=False)
-    role = Column(Enum(UserRole), nullable=False)
+    role = Column(_pg_enum(UserRole, "userrole"), nullable=False)
     password_hash = Column(String, nullable=True)
 
 
@@ -131,12 +144,12 @@ class Query(Base):
     __tablename__ = "queries"
 
     query_id = Column(UUID(as_uuid=True), primary_key=True, default=_uuid)
-    channel = Column(Enum(QueryChannel), nullable=False)
+    channel = Column(_pg_enum(QueryChannel, "querychannel"), nullable=False)
     text = Column(Text, nullable=False)
     submitted_by = Column(UUID(as_uuid=True), ForeignKey("users.user_id"), nullable=True)
     submitted_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     confidence_score = Column(Float, nullable=True)
-    status = Column(Enum(QueryStatus), nullable=False)
+    status = Column(_pg_enum(QueryStatus, "querystatus"), nullable=False)
 
     drafts = relationship("Draft", back_populates="query")
 
@@ -160,7 +173,7 @@ class Review(Base):
     review_id = Column(UUID(as_uuid=True), primary_key=True, default=_uuid)
     draft_id = Column(UUID(as_uuid=True), ForeignKey("drafts.draft_id"), nullable=False)
     reviewer_id = Column(UUID(as_uuid=True), ForeignKey("users.user_id"), nullable=False)
-    decision = Column(Enum(ReviewDecision), nullable=False)
+    decision = Column(_pg_enum(ReviewDecision, "reviewdecision"), nullable=False)
     final_text = Column(Text, nullable=True)
     reason = Column(Text, nullable=True)
     decided_at = Column(DateTime, default=datetime.utcnow, nullable=False)
@@ -186,7 +199,7 @@ class TerminologyGuide(Base):
     __tablename__ = "terminology_guide"
 
     guide_entry_id = Column(UUID(as_uuid=True), primary_key=True, default=_uuid)
-    category = Column(Enum(TerminologyCategory), nullable=False)
+    category = Column(_pg_enum(TerminologyCategory, "terminologycategory"), nullable=False)
     term_or_topic = Column(String, nullable=False)
     approved_guidance = Column(Text, nullable=False)
     discouraged_alternative = Column(Text, nullable=True)

@@ -1,0 +1,10 @@
+# The curated Stats SA source set (specs/002, target 15-30 documents per
+# docs/05-mvp-scope-and-roadmap.md). Add more entries as the team curates —
+# each needs either a `local_path` (fastest, offline) or a `url` to fetch live.
+# One real entry is here now as a working example and live-test fixture.
+
+- title: "Gross Domestic Product (GDP), 2nd Quarter 2026 - Press Release"
+  url: "https://www.statssa.gov.za/publications/P0441/Press release - Q2 2026.pdf"
+  category: "Press Statement"
+  published_date: 2026-09-08
+  local_path: "tests/fixtures/P0441_GDP_Q2_2026_press_release.pdf"
