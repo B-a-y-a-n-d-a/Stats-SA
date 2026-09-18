@@ -25,10 +25,12 @@ This file is the at-a-glance snapshot. **The source of truth for claiming a task
 | 7 | Communication memory &amp; reuse | [#7](https://github.com/B-a-y-a-n-d-a/Stats-SA/issues/7) | [specs/007](specs/007-communication-memory/spec.md) | 1, 3, 6 | Not started | Unclaimed |
 | 8 | Curator-admin UI | [#8](https://github.com/B-a-y-a-n-d-a/Stats-SA/issues/8) | [specs/008](specs/008-curator-admin/spec.md) | 1, 2, 9 | Not started | Unclaimed |
 | 9 | RBAC &amp; auth | [#9](https://github.com/B-a-y-a-n-d-a/Stats-SA/issues/9) | [specs/009](specs/009-rbac-auth/spec.md) | 1 | Done | Devin |
-| 10 | Audit log | [#10](https://github.com/B-a-y-a-n-d-a/Stats-SA/issues/10) | [specs/010](specs/010-audit-log/spec.md) | 1 | In Progress | Claude |
+| 10 | Audit log | [#10](https://github.com/B-a-y-a-n-d-a/Stats-SA/issues/10) | [specs/010](specs/010-audit-log/spec.md) | 1 | Done | Claude |
 | 11 | Frontend shell &amp; end-to-end integration | [#11](https://github.com/B-a-y-a-n-d-a/Stats-SA/issues/11) | [specs/011](specs/011-frontend-shell-integration/spec.md) | 4-10 | Not started | Unclaimed |
 
-**Status:** Tasks 1-5 and 9 are merged to `master`, all fully live-verified against a real Postgres container. Task 10 is in progress now (real Postgres/browser testing, same standard as every other task). Tasks 6, 7 and 8 are open to claim — 6 and 8 now depend on the *real* `require_role` dependency (`app.core.security`, Task 9 merged), not a temporary header.
+**Status:** Tasks 1-5, 9 and 10 are merged to `master` — that's everything except 6, 7, 8 and 11. All fully live-verified against a real Postgres container; full backend suite is 39/39 passing on `master` right now. Tasks 6 and 8 are the best pick next (both now depend on the *real* `require_role` dependency, Task 9 merged, not a temporary header) — 7 needs 6 first, and 11 needs everything.
+
+**Task 10's mid-flight update:** it was scoped against the temporary `X-Demo-Role` header pattern, but Task 9 (real JWT auth) merged partway through, so `GET /api/audit` was wired directly to the real `require_role("comms_official", "curator_admin")` instead of building the stub and swapping it later. If you're picking up 6 or 8, do the same — go straight to `require_role`, the temporary header was never actually written anywhere.
 
 **Real bugs caught by live testing, none visible from code review alone:**
 - passlib/bcrypt incompatibility (PR #13)
