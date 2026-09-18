@@ -28,7 +28,7 @@ This file is the at-a-glance snapshot. **The source of truth for claiming a task
 | 10 | Audit log | [#10](https://github.com/B-a-y-a-n-d-a/Stats-SA/issues/10) | [specs/010](specs/010-audit-log/spec.md) | 1 | Not started | Unclaimed |
 | 11 | Frontend shell &amp; end-to-end integration | [#11](https://github.com/B-a-y-a-n-d-a/Stats-SA/issues/11) | [specs/011](specs/011-frontend-shell-integration/spec.md) | 4-10 | Not started | Unclaimed |
 
-**Status:** Task 1 is merged to `master`. Tasks 2, 9 and 10 are now unblocked and open for teammates to claim immediately — 9 and 10 have no dependencies at all and are good picks to run in parallel with Claude's Task 2. Live-verify [#1](https://github.com/B-a-y-a-n-d-a/Stats-SA/issues/1)'s migration against a real `docker-compose up` once your Docker is working (it's verified correct via offline SQL compilation, just not run against an actual server yet).
+**Status:** Task 1 is merged to `master` and fully live-verified (`docker-compose up -d db`, `alembic upgrade head`, `python -m app.db.seed`, and `GET /health` all confirmed against a real Postgres container). One real bug was caught and fixed in the process: passlib's bcrypt backend is broken against modern `bcrypt` releases — replaced with a direct `bcrypt` wrapper in `app/core/passwords.py` (PR #13). Tasks 2, 9 and 10 are now unblocked and open for teammates to claim — 9 and 10 have no dependencies at all and are good picks to run in parallel with Claude's Task 2. `docker-compose up -d db` in `infra/` now works on this machine if you want a shared reference for testing your own task.
 
 \* 6 and 8 can start before 9 merges using a temporary demo-role header; see their specs.
 
