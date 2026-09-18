@@ -1,6 +1,6 @@
 # Implements specs/009-rbac-auth/spec.md — branch feature/009-rbac-auth.
 from fastapi import APIRouter, Depends, HTTPException, status
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
 from app.core.passwords import verify_password
@@ -14,8 +14,8 @@ router = APIRouter(prefix="/api/auth", tags=["auth"])
 class LoginRequest(BaseModel):
     # Plain str, not EmailStr: the seeded demo accounts live on the special-use
     # `.local` domain, which email-validator rejects (specs/001 seed.py).
-    email: str
-    password: str
+    email: str = Field(max_length=320)
+    password: str = Field(max_length=128)
 
 
 class LoginResponse(BaseModel):
