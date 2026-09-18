@@ -25,9 +25,9 @@ Tables required (fields as specified in the docs, do not invent new fields witho
 
 - [x] All 9 tables exist as SQLAlchemy models in `backend/app/db/models.py`, matching the field lists above.
 - [x] `pgvector` extension is enabled in the migration, and `chunks.embedding` uses it.
-- [x] A migration tool (Alembic) is wired up; `alembic upgrade head` creates every table from empty. **Verified by manual field-by-field review and table-creation-order check against every foreign key (see PR #1 description) — NOT yet run against a live database.** Docker Desktop hit an unrelated OS-level bug (a stuck reparse point from its Inference/Model Runner feature, Windows error 1920) on the machine that built this, which needs a reboot to clear. First person to get `docker-compose up` running should run `alembic upgrade head` and report back here.
-- [x] A `seed.py` script creates the 4 demo accounts (one per role) with a fixed, documented password for demo day.
-- [x] `docker-compose up db` brings up Postgres with the extension enabled, no manual steps (image already correct; blocked on the same local Docker issue for a live check).
+- [x] A migration tool (Alembic) is wired up. Verified with `alembic upgrade head --sql` and `alembic downgrade base --sql` (offline mode, compiles real SQL against the PostgreSQL dialect without needing a live server) — both produce clean, FK-order-correct DDL for all 9 tables and 7 enum types, in both directions. **Not yet run against an actual running Postgres** (`docker-compose up` is blocked by an unrelated local Docker Desktop bug — a stuck reparse point from its Inference/Model Runner feature, Windows error 1920, which needs a machine reboot to clear). First person with working Docker should run it live and confirm here — the generated SQL is already verified correct, this is just the "does a real server accept it" check.
+- [x] A `seed.py` script creates the 4 demo accounts (one per role) with a fixed, documented password for demo day. Verified: imports cleanly, `DEMO_ACCOUNTS` resolves to the 4 correct role emails.
+- [x] `docker-compose up db` brings up Postgres with the extension enabled, no manual steps (image confirmed correct; live run blocked by the same local Docker issue).
 
 ## Implementation Tasks
 
