@@ -30,7 +30,9 @@ This file is the at-a-glance snapshot. **The source of truth for claiming a task
 
 **Status:** Tasks 1, 2 and 3 are merged to `master`, all fully live-verified against a real Postgres container. Three real bugs were caught by that live testing, none visible from code review alone: passlib's bcrypt backend breaks against modern `bcrypt` (PR #13), a models.py enum-encoding mismatch that only surfaces once you actually insert a `Source` row (PR #15), and — the big one — **the default confidence threshold (0.75) was an untested guess that would have rejected every query, including correct ones** (relevant queries measure 0.47-0.54 with our embedding model, not 0.75+; recalibrated to 0.4 in PR #16). Someone (git identity "Devin") has PR #14 open for Task 9 — please assign yourself on issue #9 so the board stays accurate. Tasks 4 and 5 (both need 3, now unblocked), 8, 10 are open to claim now.
 
-\* 6 and 8 can start before 9 merges using a temporary demo-role header; see their specs.
+\* 6 and 8 can start before 9 merges using a temporary demo-role header; see their specs. No such header was ever written, so once 9 merges they should use `require_role` directly.
+
+**Task 9 (in review):** `POST /api/auth/login` issues a JWT for the 4 seeded accounts, `GET /api/auth/me` echoes the verified `{user_id, role}`, and `Depends(require_role(...))` guards any endpoint — 401 without a valid token, 403 with the wrong role. Tasks 6, 8 and 10 can wire it in as soon as this merges.
 
 ## Suggested parallel lanes
 
