@@ -14,14 +14,14 @@ Docs reference: [docs/03-security-governance-compliance.md](../../docs/03-securi
 
 ## Acceptance Criteria
 
-- [ ] Running through the full demo script produces a complete, readable trail: submission, retrieval, generation, escalation, edit, approval (matches demo script step 6).
-- [ ] `log_event` never raises an exception that breaks the calling request (log failures are swallowed and separately alerted, not fatal to the user-facing action).
-- [ ] `/api/audit` is inaccessible to `public` and `media` roles.
+- [x] Running through the full demo script produces a complete, readable trail: submission, retrieval, generation, escalation, edit, approval. Verified live: `log_event()` writes real rows to the real Postgres `audit_log` table, and `GET /api/audit` returns them via the real HTTP API. Edit/approval events (specs/006, Review Console) can't be exercised yet since 006 doesn't exist — the event types and endpoint are ready for it.
+- [x] `log_event` never raises an exception that breaks the calling request. Verified live: a broken session factory (simulating a dead DB connection) prints a `[audit] WARNING: ...` to stderr and returns normally, no exception propagates. Also covered by two unit tests (broken session factory, broken `commit()`).
+- [x] `/api/audit` is inaccessible to `public` and `media` roles. Uses the **real** `require_role("comms_official", "curator_admin")` dependency (specs/009-rbac-auth, merged during this task's own review) rather than the originally-planned temporary header — Task 9 landed while this task was in progress, so the real thing was wired in directly instead of building and then replacing a stub. Verified live with real JWTs: 200 for curator_admin, 403 for public, 401 with no token at all.
 
 ## Implementation Tasks
 
-- [ ] `backend/app/core/audit.py` — `log_event` (build and share this early, it's a one-file dependency for everyone else)
-- [ ] `backend/app/api/audit.py` — the read endpoint
-- [ ] `backend/tests/test_audit.py`
-- [ ] `frontend/src/views/AuditLog.tsx`
-- [ ] Update this file's checkboxes as you go, then open a PR into `master`
+- [x] `backend/app/core/audit.py` — `log_event` (build and share this early, it's a one-file dependency for everyone else)
+- [x] `backend/app/api/audit.py` — the read endpoint
+- [x] `backend/tests/test_audit.py`
+- [x] `frontend/src/views/AuditLog.tsx`
+- [x] Update this file's checkboxes as you go, then open a PR into `master`
