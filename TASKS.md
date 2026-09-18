@@ -21,16 +21,18 @@ This file is the at-a-glance snapshot. **The source of truth for claiming a task
 | 3 | Retrieval, confidence gate &amp; citation enforcement | [#3](https://github.com/B-a-y-a-n-d-a/Stats-SA/issues/3) | [specs/003](specs/003-retrieval-confidence-gate/spec.md) | 1, 2 | Done | Claude |
 | 4 | Public query API &amp; widget | [#4](https://github.com/B-a-y-a-n-d-a/Stats-SA/issues/4) | [specs/004](specs/004-public-query-widget/spec.md) | 1, 3 | Done | Claude |
 | 5 | Media query intake &amp; draft generation | [#5](https://github.com/B-a-y-a-n-d-a/Stats-SA/issues/5) | [specs/005](specs/005-media-query-draft/spec.md) | 1, 3 | Done | Devin |
-| 6 | Review console | [#6](https://github.com/B-a-y-a-n-d-a/Stats-SA/issues/6) | [specs/006](specs/006-review-console/spec.md) | 1, 5, 9 | Not started | Unclaimed |
+| 6 | Review console | [#6](https://github.com/B-a-y-a-n-d-a/Stats-SA/issues/6) | [specs/006](specs/006-review-console/spec.md) | 1, 5, 9 | Done | Claude |
 | 7 | Communication memory &amp; reuse | [#7](https://github.com/B-a-y-a-n-d-a/Stats-SA/issues/7) | [specs/007](specs/007-communication-memory/spec.md) | 1, 3, 6 | Not started | Unclaimed |
 | 8 | Curator-admin UI | [#8](https://github.com/B-a-y-a-n-d-a/Stats-SA/issues/8) | [specs/008](specs/008-curator-admin/spec.md) | 1, 2, 9 | Not started | Unclaimed |
 | 9 | RBAC &amp; auth | [#9](https://github.com/B-a-y-a-n-d-a/Stats-SA/issues/9) | [specs/009](specs/009-rbac-auth/spec.md) | 1 | Done | Devin |
 | 10 | Audit log | [#10](https://github.com/B-a-y-a-n-d-a/Stats-SA/issues/10) | [specs/010](specs/010-audit-log/spec.md) | 1 | Done | Claude |
 | 11 | Frontend shell &amp; end-to-end integration | [#11](https://github.com/B-a-y-a-n-d-a/Stats-SA/issues/11) | [specs/011](specs/011-frontend-shell-integration/spec.md) | 4-10 | Not started | Unclaimed |
 
-**Status:** Tasks 1-5, 9 and 10 are merged to `master` — that's everything except 6, 7, 8 and 11. All fully live-verified against a real Postgres container; full backend suite is 39/39 passing on `master` right now. Tasks 6 and 8 are the best pick next (both now depend on the *real* `require_role` dependency, Task 9 merged, not a temporary header) — 7 needs 6 first, and 11 needs everything.
+**Status:** Tasks 1-6, 9 and 10 are merged to `master` — only 7, 8 and 11 remain. All fully live-verified against a real Postgres container; full backend suite is 61/61 passing on `master` right now. Task 8 (curator-admin) is the best pick next — 7 needs 6, now done, so it's open too, but check `communication_memory` writes from the review-approval path in Task 6 before assuming it's a clean start. 11 needs everything.
 
-**Task 10's mid-flight update:** it was scoped against the temporary `X-Demo-Role` header pattern, but Task 9 (real JWT auth) merged partway through, so `GET /api/audit` was wired directly to the real `require_role("comms_official", "curator_admin")` instead of building the stub and swapping it later. If you're picking up 6 or 8, do the same — go straight to `require_role`, the temporary header was never actually written anywhere.
+**Task 6 finally closed a loop that started at Task 4:** `public_query.py`'s low-confidence escalation branch never used the shared `draft_builder.build_draft` structure Task 5 introduced — every public-path Draft was a plain string. Fixed now, so every Draft in the system (public and media) is uniform JSON. Also added `GET /api/public/query/{query_id}` so a public requester who got the "check back shortly" message can poll for the real answer once approved — this exists at the API level only, no polling UI was added to `PublicWidget.tsx` (left for 11 if wanted).
+
+**Task 10's mid-flight update, same pattern followed by 6:** both were scoped against a temporary `X-Demo-Role` header pattern that turned out to never get built — Task 9 (real JWT auth) merged before or during both, so both went straight to the real `require_role(...)` dependency instead of building a stub and swapping it later. If you're picking up 7 or 8, do the same.
 
 **Real bugs caught by live testing, none visible from code review alone:**
 - passlib/bcrypt incompatibility (PR #13)
@@ -39,9 +41,7 @@ This file is the at-a-glance snapshot. **The source of truth for claiming a task
 - stale fixture path in `seed_sources.yaml` left over from Task 2's own cleanup (PR #18)
 - **a real cross-test-file bug, found twice:** `test_media_query.py` and (independently) `test_auth.py` each did `app.dependency_overrides.clear()` in their fixture teardown — since that dict is shared by the whole FastAPI app, it silently wiped `test_public_query.py`'s own override too, making its tests fall through to a real Postgres connection instead of their intended in-memory SQLite. Only surfaced by running the *full* suite together, not any file in isolation. Fixed in both places to save/restore only the key each fixture itself sets — worth remembering as the pattern for any future test file that overrides `get_db`.
 
-**Task 5's coordination note, resolved:** `public_query.py`'s inline Draft-creation (Task 4) still hasn't been refactored to use the shared `draft_builder.build_draft` (Task 5, now merged) — left as-is since it's out of scope for both tasks' original PRs; worth a small follow-up.
-
-Two agents were working in parallel without claiming issues first this session — "Devin" (an AI agent, per its commit author) had PRs open for Tasks 5 and 9 with neither issue self-assigned. Both are merged now; issues #5 and #9 should still be marked closed/assigned for the record.
+Two agents were working in parallel without claiming issues first this session — "Devin" (an AI agent, per its commit author) had PRs open for Tasks 5 and 9 with neither issue self-assigned. Both are merged now; issues #5 and #9 auto-closed on merge.
 
 ## Suggested parallel lanes
 
