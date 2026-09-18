@@ -176,6 +176,36 @@ const styles: Record<string, CSSProperties> = {
     border: "1px solid #ccc",
     fontSize: 14,
   },
+  reuseBox: {
+    padding: 12,
+    borderRadius: 4,
+    backgroundColor: "#eef2fb",
+    border: "1px solid #c3d0ee",
+  },
+  reuseScoreBadge: {
+    display: "inline-block",
+    padding: "2px 10px",
+    borderRadius: 12,
+    fontSize: 12,
+    fontWeight: 600,
+    backgroundColor: "#dbe4f7",
+    color: "#1f3a63",
+    whiteSpace: "nowrap",
+  },
+  reuseQuery: {
+    margin: "8px 0 4px 0",
+    fontSize: 13,
+    color: "#444",
+    fontStyle: "italic",
+  },
+  reuseAnswer: {
+    margin: "0 0 8px 0",
+    whiteSpace: "pre-wrap",
+  },
+  reuseMeta: {
+    fontSize: 12,
+    color: "#555",
+  },
   historyList: {
     margin: 0,
     paddingLeft: 18,
@@ -525,6 +555,22 @@ export default function ReviewConsole() {
                         )}
                       </div>
                     </div>
+
+                    {item.reuse_match && (
+                      <div style={styles.section}>
+                        <p style={styles.sectionHeading}>Suggested reuse — similar approved response</p>
+                        <div style={styles.reuseBox}>
+                          <span style={styles.reuseScoreBadge}>
+                            Match: {Math.round(item.reuse_match.score * 100)}%
+                          </span>
+                          <p style={styles.reuseQuery}>&ldquo;{item.reuse_match.query_text}&rdquo;</p>
+                          <p style={styles.reuseAnswer}>{item.reuse_match.final_answer}</p>
+                          <div style={styles.reuseMeta}>
+                            Approved {formatTimestamp(item.reuse_match.approved_at)}
+                          </div>
+                        </div>
+                      </div>
+                    )}
 
                     {item.draft.submitter && (
                       <div style={styles.section}>
