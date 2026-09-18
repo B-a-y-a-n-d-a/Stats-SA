@@ -33,3 +33,5 @@ The public self-service path.
 - [x] `frontend/src/api/publicQuery.ts`
 - [x] `frontend/mock-site/index.html` — static mock Stats SA header/layout embedding the widget
 - [x] Update this file's checkboxes as you go, then open a PR into `master`
+
+**Post-merge addition (specs/006):** `GET /api/public/query/{query_id}` was added to this file by Task 6 so a requester who got the escalation message can poll for the reviewed answer once a Communications Official decides on it. Also, this file's escalation branch was refactored to build its Draft via the shared `draft_builder.build_draft` (specs/005) instead of a plain string, so the Review Console can render every Draft in the system uniformly.
