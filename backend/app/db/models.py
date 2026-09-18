@@ -110,6 +110,10 @@ class Source(Base):
     )
     checksum = Column(String, nullable=False)
     retention_review_date = Column(Date, nullable=True)
+    # Curator-Admin retirement (specs/008-curator-admin): a retired source is not
+    # hard-deleted (audit requirements) but becomes non-retrievable — see
+    # app/retrieval/search.py, which excludes any Source with retired_at set.
+    retired_at = Column(DateTime, nullable=True)
 
     chunks = relationship("Chunk", back_populates="source")
 
