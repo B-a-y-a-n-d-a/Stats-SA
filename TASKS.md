@@ -13,20 +13,22 @@ This file is the at-a-glance snapshot. **The source of truth for claiming a task
 
 ## Task Table
 
-| # | Task | Spec | Depends on | Status | Owner |
-|---|---|---|---|---|---|
-| 0 | MVP technical decisions (ADR, reference only, no branch) | [specs/000](specs/000-mvp-technical-decisions.md) | — | Done | Claude |
-| 1 | Data model &amp; Approved Sources Registry | [specs/001](specs/001-data-model-registry/spec.md) | none | Not started | Unclaimed |
-| 2 | Ingestion pipeline | [specs/002](specs/002-ingestion-pipeline/spec.md) | 1 | Not started | Unclaimed |
-| 3 | Retrieval, confidence gate &amp; citation enforcement | [specs/003](specs/003-retrieval-confidence-gate/spec.md) | 1, 2 | Not started | Unclaimed |
-| 4 | Public query API &amp; widget | [specs/004](specs/004-public-query-widget/spec.md) | 1, 3 | Not started | Unclaimed |
-| 5 | Media query intake &amp; draft generation | [specs/005](specs/005-media-query-draft/spec.md) | 1, 3 | Not started | Unclaimed |
-| 6 | Review console | [specs/006](specs/006-review-console/spec.md) | 1, 5, 9\* | Not started | Unclaimed |
-| 7 | Communication memory &amp; reuse | [specs/007](specs/007-communication-memory/spec.md) | 1, 3, 6 | Not started | Unclaimed |
-| 8 | Curator-admin UI | [specs/008](specs/008-curator-admin/spec.md) | 1, 2, 9\* | Not started | Unclaimed |
-| 9 | RBAC &amp; auth | [specs/009](specs/009-rbac-auth/spec.md) | 1 | Not started | Unclaimed |
-| 10 | Audit log | [specs/010](specs/010-audit-log/spec.md) | 1 | Not started | Unclaimed |
-| 11 | Frontend shell &amp; end-to-end integration | [specs/011](specs/011-frontend-shell-integration/spec.md) | 4-10 | Not started | Unclaimed |
+| # | Task | Issue | Spec | Depends on | Status | Owner |
+|---|---|---|---|---|---|---|
+| 0 | MVP technical decisions (ADR, reference only, no branch) | — | [specs/000](specs/000-mvp-technical-decisions.md) | — | Done | Claude |
+| 1 | Data model &amp; Approved Sources Registry | [#1](https://github.com/B-a-y-a-n-d-a/Stats-SA/issues/1) | [specs/001](specs/001-data-model-registry/spec.md) | none | In Progress | Claude |
+| 2 | Ingestion pipeline | [#2](https://github.com/B-a-y-a-n-d-a/Stats-SA/issues/2) | [specs/002](specs/002-ingestion-pipeline/spec.md) | 1 | Not started | Unclaimed |
+| 3 | Retrieval, confidence gate &amp; citation enforcement | [#3](https://github.com/B-a-y-a-n-d-a/Stats-SA/issues/3) | [specs/003](specs/003-retrieval-confidence-gate/spec.md) | 1, 2 | Not started | Unclaimed |
+| 4 | Public query API &amp; widget | [#4](https://github.com/B-a-y-a-n-d-a/Stats-SA/issues/4) | [specs/004](specs/004-public-query-widget/spec.md) | 1, 3 | Not started | Unclaimed |
+| 5 | Media query intake &amp; draft generation | [#5](https://github.com/B-a-y-a-n-d-a/Stats-SA/issues/5) | [specs/005](specs/005-media-query-draft/spec.md) | 1, 3 | Not started | Unclaimed |
+| 6 | Review console | [#6](https://github.com/B-a-y-a-n-d-a/Stats-SA/issues/6) | [specs/006](specs/006-review-console/spec.md) | 1, 5, 9\* | Not started | Unclaimed |
+| 7 | Communication memory &amp; reuse | [#7](https://github.com/B-a-y-a-n-d-a/Stats-SA/issues/7) | [specs/007](specs/007-communication-memory/spec.md) | 1, 3, 6 | Not started | Unclaimed |
+| 8 | Curator-admin UI | [#8](https://github.com/B-a-y-a-n-d-a/Stats-SA/issues/8) | [specs/008](specs/008-curator-admin/spec.md) | 1, 2, 9\* | Not started | Unclaimed |
+| 9 | RBAC &amp; auth | [#9](https://github.com/B-a-y-a-n-d-a/Stats-SA/issues/9) | [specs/009](specs/009-rbac-auth/spec.md) | 1 | Not started | Unclaimed |
+| 10 | Audit log | [#10](https://github.com/B-a-y-a-n-d-a/Stats-SA/issues/10) | [specs/010](specs/010-audit-log/spec.md) | 1 | Not started | Unclaimed |
+| 11 | Frontend shell &amp; end-to-end integration | [#11](https://github.com/B-a-y-a-n-d-a/Stats-SA/issues/11) | [specs/011](specs/011-frontend-shell-integration/spec.md) | 4-10 | Not started | Unclaimed |
+
+**Claimed right now:** Task 1, by Claude (this session) — branch `feature/001-data-model-registry` is next. Everything else is open for teammates to claim immediately; tasks 9 and 10 have no dependencies and are good to pick up in parallel right now.
 
 \* 6 and 8 can start before 9 merges using a temporary demo-role header; see their specs.
 
