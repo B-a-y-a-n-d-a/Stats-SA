@@ -23,18 +23,20 @@ This file is the at-a-glance snapshot. **The source of truth for claiming a task
 | 5 | Media query intake &amp; draft generation | [#5](https://github.com/B-a-y-a-n-d-a/Stats-SA/issues/5) | [specs/005](specs/005-media-query-draft/spec.md) | 1, 3 | Done | Devin |
 | 6 | Review console | [#6](https://github.com/B-a-y-a-n-d-a/Stats-SA/issues/6) | [specs/006](specs/006-review-console/spec.md) | 1, 5, 9 | Done | Claude |
 | 7 | Communication memory &amp; reuse | [#7](https://github.com/B-a-y-a-n-d-a/Stats-SA/issues/7) | [specs/007](specs/007-communication-memory/spec.md) | 1, 3, 6 | Done | Claude |
-| 8 | Curator-admin UI | [#8](https://github.com/B-a-y-a-n-d-a/Stats-SA/issues/8) | [specs/008](specs/008-curator-admin/spec.md) | 1, 2, 9 | Not started | Unclaimed |
+| 8 | Curator-admin UI | [#8](https://github.com/B-a-y-a-n-d-a/Stats-SA/issues/8) | [specs/008](specs/008-curator-admin/spec.md) | 1, 2, 9 | Done | Claude |
 | 9 | RBAC &amp; auth | [#9](https://github.com/B-a-y-a-n-d-a/Stats-SA/issues/9) | [specs/009](specs/009-rbac-auth/spec.md) | 1 | Done | Devin |
 | 10 | Audit log | [#10](https://github.com/B-a-y-a-n-d-a/Stats-SA/issues/10) | [specs/010](specs/010-audit-log/spec.md) | 1 | Done | Claude |
 | 11 | Frontend shell &amp; end-to-end integration | [#11](https://github.com/B-a-y-a-n-d-a/Stats-SA/issues/11) | [specs/011](specs/011-frontend-shell-integration/spec.md) | 4-10 | Not started | Unclaimed |
 
-**Status:** Tasks 1-7, 9 and 10 are merged to `master` — only 8 and 11 remain. All fully live-verified against a real Postgres container; full backend suite is 82/82 passing on `master` right now. Task 8 is next; 11 needs it done first (it needs everything).
+**Status:** Tasks 1-10 are merged to `master` — only 11 remains, and it needs everything else in, which is now true. All fully live-verified against a real Postgres container; full backend suite is 103/103 passing on `master` right now.
+
+**Task 8 gave Curator-Admin the only write-path into the Approved Sources Registry and terminology guide**, and closed the other silent half of "non-retrievable": retiring a source now actually excludes it from `app/retrieval/search.py`, not just from the curator's own list view — verified live by retiring a just-uploaded source and watching the exact same question flip from an answered, cited response to an escalation. Also removed `POST /internal/ingest`, an unauthenticated duplicate of the new gated upload endpoint that had no remaining purpose and was a real security hole. And found a real bug live-testing the URL-paste path: a bot-protection page from a real `statssa.gov.za` URL returned `200 text/html` and reached the PDF parser unvalidated, 500ing — fixed with a magic-bytes check returning a clean 400 instead.
 
 **Task 7 closed the loop `reuse_match` left open in Task 6:** the review queue's `reuse_match` field is real now — approving a draft writes a `communication_memory` row, and the next similar query surfaces it with a keyword-overlap score. Verified live by replaying demo script step 4 exactly. `GET /api/memory/search` also exists for direct lookup (comms_official/curator_admin only).
 
-**Recurring lesson worth internalizing for Task 8 or 11:** twice now (Tasks 5+9, then independently again in Task 7's parallel build) two people/agents writing similar test files in parallel, without seeing each other's code, have duplicated logic that should have been shared — first the `app.dependency_overrides.clear()` bug, now a duplicated serializer function. Neither was harmful, both were caught and fixed, but if you're building something with a natural shared piece (a serializer, a helper), search the codebase for it first.
+**Recurring lesson worth internalizing for Task 11:** twice now (Tasks 5+9, then independently again in Task 7's parallel build) two people/agents writing similar test files in parallel, without seeing each other's code, have duplicated logic that should have been shared — first the `app.dependency_overrides.clear()` bug, now a duplicated serializer function. Neither was harmful, both were caught and fixed, but if you're building something with a natural shared piece (a serializer, a helper), search the codebase for it first.
 
-**Task 6 and 10 both went straight to the real `require_role(...)` dependency** rather than a temporary header — Task 9 had already merged by the time either was built. Same applies to 8.
+**Tasks 6, 8 and 10 all went straight to the real `require_role(...)` dependency** rather than a temporary header — Task 9 had already merged by the time any of them were built.
 
 **Real bugs caught by live testing, none visible from code review alone:**
 - passlib/bcrypt incompatibility (PR #13)
@@ -42,6 +44,7 @@ This file is the at-a-glance snapshot. **The source of truth for claiming a task
 - default confidence threshold (0.75) was an untested guess that would have rejected every query — recalibrated to 0.4 (PR #16)
 - stale fixture path in `seed_sources.yaml` left over from Task 2's own cleanup (PR #18)
 - **a real cross-test-file bug, found twice:** `test_media_query.py` and (independently) `test_auth.py` each did `app.dependency_overrides.clear()` in their fixture teardown — since that dict is shared by the whole FastAPI app, it silently wiped `test_public_query.py`'s own override too, making its tests fall through to a real Postgres connection instead of their intended in-memory SQLite. Only surfaced by running the *full* suite together, not any file in isolation. Fixed in both places to save/restore only the key each fixture itself sets — worth remembering as the pattern for any future test file that overrides `get_db`.
+- a 200 response isn't proof of a valid payload: Task 8's URL-paste ingestion trusted any 200 response body to be a PDF, so a real `statssa.gov.za` URL's bot-protection page (200, `text/html`) reached the parser unvalidated and 500'd — fixed with a `file_bytes.startswith(b"%PDF-")` check before parsing (PR #22)
 
 Two agents were working in parallel without claiming issues first this session — "Devin" (an AI agent, per its commit author) had PRs open for Tasks 5 and 9 with neither issue self-assigned. Both are merged now; issues #5 and #9 auto-closed on merge.
 
