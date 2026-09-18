@@ -6,13 +6,18 @@ Runs FastAPI's TestClient against the real app (app.main.app), with get_db
 overridden to an in-memory SQLite engine (StaticPool, check_same_thread=False —
 the same pattern tests/test_public_query.py, tests/test_media_query.py and
 tests/test_audit.py already use successfully). Only the tables this suite touches
-(queries, drafts, reviews, audit_log) are created via
+(queries, drafts, reviews, communication_memory, audit_log) are created via
 Base.metadata.create_all(..., tables=[...]) — like test_audit.py, this never
 creates `users`, since every FK to it (Query.submitted_by, Review.reviewer_id,
-AuditLog.actor_id) is either nullable or, for Review.reviewer_id, just a plain
-NOT NULL column value (a real uuid from a real JWT) with nothing here relying on
-the DB enforcing the FK target itself — SQLite does not enforce FKs unless
-PRAGMA foreign_keys=ON is set, which nothing here does.
+AuditLog.actor_id, CommunicationMemory.approved_by) is either nullable or, for
+Review.reviewer_id and CommunicationMemory.approved_by, just a plain NOT NULL
+column value (a real uuid from a real JWT) with nothing here relying on the DB
+enforcing the FK target itself — SQLite does not enforce FKs unless
+PRAGMA foreign_keys=ON is set, which nothing here does. communication_memory is
+created (and cleared per test) because specs/007 hooked a write to it into
+POST /{draft_id}/decide's approve/edit_approve path — see tests/test_memory.py
+for that behavior's own coverage; this file only needs the table to exist so
+decide doesn't 500 against SQLite.
 
 Auth uses real JWTs via app.core.security.create_access_token, same as
 tests/test_audit.py. log_event() (app/core/audit.py) opens its own short-lived
@@ -41,7 +46,7 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
 from app.core.security import create_access_token
-from app.db.models import AuditLog, Draft, Query, QueryChannel, QueryStatus, Review, ReviewDecision
+from app.db.models import AuditLog, CommunicationMemory, Draft, Query, QueryChannel, QueryStatus, Review, ReviewDecision
 from app.db.session import Base, get_db
 from app.main import app
 
@@ -53,7 +58,7 @@ engine = create_engine(
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine, future=True)
 Base.metadata.create_all(
     bind=engine,
-    tables=[Query.__table__, Draft.__table__, Review.__table__, AuditLog.__table__],
+    tables=[Query.__table__, Draft.__table__, Review.__table__, CommunicationMemory.__table__, AuditLog.__table__],
 )
 
 
@@ -76,6 +81,7 @@ def _review_test_db():
         db.query(Review).delete()
         db.query(Draft).delete()
         db.query(Query).delete()
+        db.query(CommunicationMemory).delete()
         db.query(AuditLog).delete()
         db.commit()
     finally:

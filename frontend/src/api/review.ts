@@ -51,6 +51,19 @@ export interface ReviewHistoryEntry {
   decided_at: string;
 }
 
+// The single best prior-approved match for a draft's query, per
+// specs/007-communication-memory — same shape GET /api/memory/search returns
+// for each of its results. Populated by backend/app/retrieval/memory_match.py.
+export interface ReuseMatch {
+  memory_id: string;
+  query_text: string;
+  final_answer: string;
+  citations: Citation[];
+  approved_by: string;
+  approved_at: string;
+  score: number;
+}
+
 export interface ReviewQueueItem {
   query_id: string;
   draft_id: string;
@@ -60,10 +73,10 @@ export interface ReviewQueueItem {
   confidence_score: number;
   submitted_at: string;
   draft: ReviewDraft;
-  // Always null for now — populated by specs/007 (Communication Memory) once
-  // it exists; the field is already on the contract so 007 can fill it in
-  // without another shape change here.
-  reuse_match: null;
+  // The single best prior-approved response to a similar question (specs/007),
+  // or null when no candidate scored above 0 / the memory repository is
+  // empty. Supplementary context only — never auto-substituted for `draft`.
+  reuse_match: ReuseMatch | null;
   review_history: ReviewHistoryEntry[];
 }
 

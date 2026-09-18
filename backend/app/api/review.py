@@ -13,9 +13,11 @@
 # drafts already were (specs/005), public escalations now are too — so this router
 # can safely json.loads() every Draft it touches without a format check.
 #
-# "reuse_match" is always null: it belongs to specs/007 (Communication Memory), not
-# built yet. The field exists in the response now so 007 can populate it later
-# without changing this contract.
+# "reuse_match" (specs/007, Communication Memory): populated by looking up the
+# single best-scoring CommunicationMemory row for this query via
+# app.retrieval.memory_match.find_best_match — see _serialize_queue_item below.
+# Approving a draft (decision "approve"/"edit_approve") also writes a new
+# CommunicationMemory row so future queries can match against it.
 import json
 import uuid
 from datetime import datetime
@@ -27,8 +29,9 @@ from sqlalchemy.orm import Session
 
 from app.core.audit import log_event
 from app.core.security import CurrentUser, require_role
-from app.db.models import Draft, Query, QueryStatus, Review, ReviewDecision
+from app.db.models import CommunicationMemory, Draft, Query, QueryStatus, Review, ReviewDecision
 from app.db.session import get_db
+from app.retrieval import memory_match
 
 router = APIRouter(prefix="/api/review", tags=["review"])
 
@@ -48,8 +51,11 @@ def _serialize_review(review: Review) -> dict:
     }
 
 
-def _serialize_queue_item(query: Query, draft: Draft) -> dict:
+def _serialize_queue_item(query: Query, draft: Draft, db: Session) -> dict:
     history = sorted(draft.reviews, key=lambda r: r.decided_at)
+    memories = db.query(CommunicationMemory).all()
+    best_match = memory_match.find_best_match(query.text, memories)
+    reuse_match = memory_match.serialize_match(*best_match) if best_match else None
     return {
         "query_id": str(query.query_id),
         "draft_id": str(draft.draft_id),
@@ -59,7 +65,7 @@ def _serialize_queue_item(query: Query, draft: Draft) -> dict:
         "confidence_score": query.confidence_score,
         "submitted_at": query.submitted_at.isoformat(),
         "draft": json.loads(draft.draft_text),
-        "reuse_match": None,
+        "reuse_match": reuse_match,
         "review_history": [_serialize_review(r) for r in history],
     }
 
@@ -83,7 +89,7 @@ def get_review_queue(
         draft = query.drafts[0] if query.drafts else None
         if draft is None:
             continue
-        items.append(_serialize_queue_item(query, draft))
+        items.append(_serialize_queue_item(query, draft, db))
     return items
 
 
@@ -118,6 +124,7 @@ def decide_review(
         final_text = payload.final_text or draft_payload.get("body")
 
     reviewer_id = uuid.UUID(user.user_id)
+    decided_at = datetime.utcnow()
 
     review = Review(
         draft_id=draft.draft_id,
@@ -125,11 +132,24 @@ def decide_review(
         decision=payload.decision,
         final_text=final_text,
         reason=payload.reason,
-        decided_at=datetime.utcnow(),
+        decided_at=decided_at,
     )
     db.add(review)
 
     query.status = QueryStatus.rejected if payload.decision == ReviewDecision.reject else QueryStatus.approved
+
+    if payload.decision != ReviewDecision.reject:
+        # specs/007 (Communication Memory): every approved response becomes a
+        # searchable precedent for the next similar question.
+        db.add(
+            CommunicationMemory(
+                query_text=query.text,
+                final_answer=final_text,
+                citations=draft.citations,
+                approved_by=reviewer_id,
+                approved_at=decided_at,
+            )
+        )
 
     db.commit()
 
