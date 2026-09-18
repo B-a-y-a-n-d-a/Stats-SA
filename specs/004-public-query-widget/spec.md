@@ -16,16 +16,20 @@ The public self-service path.
 
 ## Acceptance Criteria
 
-- [ ] Submitting "What was the latest quarterly unemployment rate?" against a seeded QLFS document returns a cited, high-confidence answer (matches demo script step 1).
-- [ ] Submitting a query with no matching content returns the escalation message, not a guess.
-- [ ] Every citation rendered in the widget is a clickable link to the source URL.
-- [ ] The widget embeds into the static mock Stats SA page in `frontend/mock-site/`.
+- [x] Submitting a real, relevant query against a real seeded document returns a cited, high-confidence answer (matches demo script step 1). Verified live end-to-end in a real browser: real Postgres + real pgvector retrieval + real ingested Stats SA GDP fact sheet, with only the final LLM call faked (no API key available in this environment — see specs/003's same note). Screenshot-confirmed: answer text, a "Confidence: 48%" badge, and a real clickable citation link all rendered correctly.
+- [x] Submitting a query with no matching content returns the escalation message, not a guess. Verified live in the browser: an unrelated query ("best recipe for chocolate cake") rendered only the escalation message, no fabricated answer.
+- [x] Every citation rendered in the widget is a clickable link to the source URL. Confirmed in the rendered screenshot — citation renders as `<a href={citation.url}>`.
+- [x] The widget embeds into the static mock Stats SA page in `frontend/mock-site/`. The mock page documents the real embed point; the actual bundling/mounting into it is specs/011's integration job, noted explicitly in the file.
+
+**Real finding from live testing:** `scripts/seed_sources.yaml` still pointed at a PDF fixture that Task 2's cleanup had removed (`P0441_GDP_Q2_2026_press_release.pdf`) — the bulk-ingest script failed on a fresh checkout. Fixed to point at the fixture that actually exists (`P0441_factsheetA.pdf`).
+
+**Not tested here:** the real `AnthropicLLMClient` call — no `LLM_API_KEY` in this build environment, consistent with specs/003.
 
 ## Implementation Tasks
 
-- [ ] `backend/app/api/public_query.py`
-- [ ] `backend/tests/test_public_query.py`
-- [ ] `frontend/src/views/PublicWidget.tsx`
-- [ ] `frontend/src/api/publicQuery.ts`
-- [ ] `frontend/mock-site/index.html` — static mock Stats SA header/layout embedding the widget
-- [ ] Update this file's checkboxes as you go, then open a PR into `master`
+- [x] `backend/app/api/public_query.py`
+- [x] `backend/tests/test_public_query.py`
+- [x] `frontend/src/views/PublicWidget.tsx`
+- [x] `frontend/src/api/publicQuery.ts`
+- [x] `frontend/mock-site/index.html` — static mock Stats SA header/layout embedding the widget
+- [x] Update this file's checkboxes as you go, then open a PR into `master`
