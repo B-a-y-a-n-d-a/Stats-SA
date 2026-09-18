@@ -51,9 +51,19 @@ def demo_users():
 
 @pytest.fixture
 def client(demo_users):
+    # app.dependency_overrides is one dict shared by the whole app; a blanket
+    # .clear() here would also wipe test_public_query.py's module-level get_db
+    # override (see the identical bug fixed in tests/test_media_query.py) and
+    # leave later tests in other files silently hitting the real Postgres
+    # connection instead of their intended fake session. Save/restore only
+    # the key this fixture itself touches.
+    previous = app.dependency_overrides.get(get_db)
     app.dependency_overrides[get_db] = lambda: FakeSession(demo_users)
     yield TestClient(app)
-    app.dependency_overrides.clear()
+    if previous is not None:
+        app.dependency_overrides[get_db] = previous
+    else:
+        app.dependency_overrides.pop(get_db, None)
 
 
 @pytest.mark.parametrize("name,email,role", DEMO_ACCOUNTS)
