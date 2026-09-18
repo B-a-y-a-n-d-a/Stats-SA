@@ -12,7 +12,12 @@
       <nav>Home | Find Statistics | Publications | Census</nav>
     </header>
     <main>
-      <!-- The public widget embeds here. See specs/004 for the embed snippet. -->
+      <!-- The public widget embeds here. See specs/004 for the embed snippet.
+           The React PublicWidget component (frontend/src/views/PublicWidget.tsx)
+           is what would be embedded here: it would be built as a separate Vite
+           entry point producing a standalone JS/CSS bundle, then mounted into
+           this div via ReactDOM.createRoot on the real Stats SA site (bundling
+           and embed wiring is specs/011's job, not done here). -->
       <div id="statssa-assistant-widget"></div>
     </main>
   </body>

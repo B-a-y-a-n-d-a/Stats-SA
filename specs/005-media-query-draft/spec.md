@@ -17,17 +17,39 @@ The media path never auto-answers — this is the one rule that cannot be relaxe
 
 Coordinate with 004: both public low-confidence queries and media queries land in the same `drafts` table and the same Review Console (006) — don't build two separate draft/review systems.
 
+## Draft shape 004 and 006 share
+
+`app/retrieval/draft_builder.build_draft(query_text, retrieval_result)` returns the one
+structure both draft-producing paths write and the Review Console reads. It is stored
+JSON-encoded in `drafts.draft_text` (the enforced citations are also written to the
+`drafts.citations` column):
+
+```json
+{
+  "headline": "...", "body": "...", "suggested_tone": "...",
+  "key_figures": [{"figure": "...", "chunk_id": "...", "source": "..."}],
+  "citations": [...], "information_gap": false, "confidence_score": 0.44,
+  "submitter": {"name": "...", "org": "...", "email": "..."}
+}
+```
+
+`key_figures` are lifted verbatim from citation quotes that survived 003's enforcement,
+never from the model's prose, so a reviewer cannot mistake an unsourced number for a
+sourced one. `information_gap: true` means `body` is the explicit gap statement and
+`key_figures` is empty. `submitter` is only set on the media path — `queries` has no
+submitter columns and a media enquirer is not a `users` row.
+
 ## Acceptance Criteria
 
-- [ ] Every submission through this endpoint results in a `drafts` row and zero direct responses to the submitter, regardless of confidence score.
-- [ ] A draft for a query with insufficient source coverage explicitly states the information gap rather than a fabricated figure.
-- [ ] The intake form never displays an "answer" — only a submission confirmation.
+- [x] Every submission through this endpoint results in a `drafts` row and zero direct responses to the submitter, regardless of confidence score.
+- [x] A draft for a query with insufficient source coverage explicitly states the information gap rather than a fabricated figure.
+- [x] The intake form never displays an "answer" — only a submission confirmation.
 
 ## Implementation Tasks
 
-- [ ] `backend/app/api/media_query.py`
-- [ ] `backend/app/retrieval/draft_builder.py` — shared draft structure builder (used by both 004's low-confidence branch and this task)
-- [ ] `backend/tests/test_media_query.py`
-- [ ] `frontend/src/views/MediaIntake.tsx`
-- [ ] `frontend/src/api/mediaQuery.ts`
-- [ ] Update this file's checkboxes as you go, then open a PR into `master`
+- [x] `backend/app/api/media_query.py`
+- [x] `backend/app/retrieval/draft_builder.py` — shared draft structure builder (used by both 004's low-confidence branch and this task)
+- [x] `backend/tests/test_media_query.py`
+- [x] `frontend/src/views/MediaIntake.tsx`
+- [x] `frontend/src/api/mediaQuery.ts`
+- [x] Update this file's checkboxes as you go, then open a PR into `master`
