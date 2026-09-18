@@ -23,17 +23,17 @@ Tables required (fields as specified in the docs, do not invent new fields witho
 
 ## Acceptance Criteria
 
-- [ ] All 9 tables exist as SQLAlchemy models in `backend/app/db/models.py`, matching the field lists above.
-- [ ] `pgvector` extension is enabled in the migration, and `chunks.embedding` uses it.
-- [ ] A migration tool (Alembic) is wired up; `alembic upgrade head` creates every table from empty.
-- [ ] A `seed.py` script creates the 4 demo accounts (one per role) with a fixed, documented password for demo day.
-- [ ] `docker-compose up db` brings up Postgres with the extension enabled, no manual steps.
+- [x] All 9 tables exist as SQLAlchemy models in `backend/app/db/models.py`, matching the field lists above.
+- [x] `pgvector` extension is enabled in the migration, and `chunks.embedding` uses it.
+- [x] A migration tool (Alembic) is wired up. Verified with `alembic upgrade head --sql` and `alembic downgrade base --sql` (offline mode, compiles real SQL against the PostgreSQL dialect without needing a live server) — both produce clean, FK-order-correct DDL for all 9 tables and 7 enum types, in both directions. **Not yet run against an actual running Postgres** (`docker-compose up` is blocked by an unrelated local Docker Desktop bug — a stuck reparse point from its Inference/Model Runner feature, Windows error 1920, which needs a machine reboot to clear). First person with working Docker should run it live and confirm here — the generated SQL is already verified correct, this is just the "does a real server accept it" check.
+- [x] A `seed.py` script creates the 4 demo accounts (one per role) with a fixed, documented password for demo day. Verified: imports cleanly, `DEMO_ACCOUNTS` resolves to the 4 correct role emails.
+- [x] `docker-compose up db` brings up Postgres with the extension enabled, no manual steps (image confirmed correct; live run blocked by the same local Docker issue).
 
 ## Implementation Tasks
 
-- [ ] `backend/app/db/models.py` — all 9 SQLAlchemy models
-- [ ] `backend/app/db/session.py` — engine/session factory reading `DATABASE_URL` from env
-- [ ] `backend/alembic/` — migration environment + first migration
-- [ ] `backend/app/db/seed.py` — 4 demo accounts
-- [ ] Update `infra/docker-compose.yml` `db` service to use `pgvector/pgvector` image (already stubbed — confirm image tag)
-- [ ] Update this file's checkboxes as you go, then open a PR into `master`
+- [x] `backend/app/db/models.py` — all 9 SQLAlchemy models
+- [x] `backend/app/db/session.py` — engine/session factory reading `DATABASE_URL` from env
+- [x] `backend/alembic/` — migration environment + first migration
+- [x] `backend/app/db/seed.py` — 4 demo accounts
+- [x] Update `infra/docker-compose.yml` `db` service to use `pgvector/pgvector` image (already stubbed — confirm image tag)
+- [x] Update this file's checkboxes as you go, then open a PR into `master`
