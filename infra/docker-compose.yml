@@ -11,7 +11,12 @@ services:
       - db-data:/var/lib/postgresql/data
 
   backend:
-    build: ../backend
+    # Build context is the repo root, not backend/ — the container also needs
+    # demo/seed-data-for-demo/ (specs/011) for the pre-seeded demo document,
+    # which lives outside backend/. See backend/Dockerfile's COPY lines.
+    build:
+      context: ..
+      dockerfile: backend/Dockerfile
     env_file: ../.env
     environment:
       DATABASE_URL: postgresql+psycopg://statssa:statssa@db:5432/statssa

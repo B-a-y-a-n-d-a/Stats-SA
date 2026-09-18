@@ -1,8 +1,27 @@
 // Implements specs/005-media-query-draft/spec.md — branch feature/005-media-query-draft.
-import { FormEvent, useState } from "react";
+// Visual/markup styling per specs/011-frontend-shell-integration/spec.md item
+// 3 — reuses the shared design tokens (styles/theme.ts, styles/shared.ts) so
+// this view looks like the same product as PublicWidget.tsx and AuditLog.tsx
+// instead of an unstyled form stapled on. Pure visual/markup change: the
+// controlled fields, submission logic and confirmation-screen behavior below
+// are unchanged from the original.
+import { FormEvent, useState, CSSProperties } from "react";
 import { submitMediaQuery } from "../api/mediaQuery";
+import { shared } from "../styles/shared";
 
 const EMPTY = { text: "", submitter_name: "", submitter_org: "", submitter_email: "" };
+
+const styles: Record<string, CSSProperties> = {
+  ...shared,
+  container: shared.containerNarrow,
+  // No shared equivalent — this view's fields stack vertically, unlike
+  // PublicWidget's single-row query form.
+  form: {
+    display: "flex",
+    flexDirection: "column",
+    gap: 12,
+  },
+};
 
 export default function MediaIntake() {
   const [form, setForm] = useState(EMPTY);
@@ -36,41 +55,57 @@ export default function MediaIntake() {
 
   if (confirmation) {
     return (
-      <div>
-        <h2>Media enquiry received</h2>
+      <div style={styles.container}>
+        <h2 style={styles.heading}>Media enquiry received</h2>
         <p>{confirmation}</p>
-        <button onClick={() => setConfirmation(null)}>Submit another enquiry</button>
+        <button style={styles.button} onClick={() => setConfirmation(null)}>
+          Submit another enquiry
+        </button>
       </div>
     );
   }
 
   return (
-    <form onSubmit={onSubmit}>
-      <h2>Media enquiry</h2>
-      <p>
-        <label htmlFor="submitter_name">Your name</label>
-        <br />
-        <input {...field("submitter_name")} />
-      </p>
-      <p>
-        <label htmlFor="submitter_org">Publication / organisation</label>
-        <br />
-        <input {...field("submitter_org")} />
-      </p>
-      <p>
-        <label htmlFor="submitter_email">Email</label>
-        <br />
-        <input type="email" {...field("submitter_email")} />
-      </p>
-      <p>
-        <label htmlFor="text">Your question</label>
-        <br />
-        <textarea rows={5} {...field("text")} />
-      </p>
-      {error && <p role="alert">{error}</p>}
-      <button type="submit" disabled={submitting}>
-        {submitting ? "Submitting..." : "Submit enquiry"}
-      </button>
-    </form>
+    <div style={styles.container}>
+      <h2 style={styles.heading}>Media enquiry</h2>
+      <form style={styles.form} onSubmit={onSubmit}>
+        <div style={styles.field}>
+          <label style={styles.label} htmlFor="submitter_name">
+            Your name
+          </label>
+          <input style={styles.input} {...field("submitter_name")} />
+        </div>
+        <div style={styles.field}>
+          <label style={styles.label} htmlFor="submitter_org">
+            Publication / organisation
+          </label>
+          <input style={styles.input} {...field("submitter_org")} />
+        </div>
+        <div style={styles.field}>
+          <label style={styles.label} htmlFor="submitter_email">
+            Email
+          </label>
+          <input style={styles.input} type="email" {...field("submitter_email")} />
+        </div>
+        <div style={styles.field}>
+          <label style={styles.label} htmlFor="text">
+            Your question
+          </label>
+          <textarea style={styles.textarea} rows={5} {...field("text")} />
+        </div>
+        {error && (
+          <div style={styles.errorBox} role="alert">
+            {error}
+          </div>
+        )}
+        <button
+          style={{ ...styles.button, ...(submitting ? styles.buttonDisabled : {}) }}
+          type="submit"
+          disabled={submitting}
+        >
+          {submitting ? "Submitting..." : "Submit enquiry"}
+        </button>
+      </form>
+    </div>
   );
 }

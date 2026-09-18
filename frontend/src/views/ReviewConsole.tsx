@@ -12,35 +12,18 @@ import {
   ReviewQueueItem,
   ReviewDecisionRequest,
 } from "../api/review";
+import { shared, pillBadge } from "../styles/shared";
+import { colors } from "../styles/theme";
 
 // --- Minimal inline styling (hackathon MVP — no CSS framework/file), matching
 // the conventions used in views/AuditLog.tsx and views/PublicWidget.tsx ---
 const styles: Record<string, CSSProperties> = {
-  container: {
-    maxWidth: 960,
-    margin: "0 auto",
-    padding: 16,
-    fontFamily: "system-ui, sans-serif",
-  },
-  heading: {
-    margin: "0 0 12px 0",
-  },
-  errorBox: {
-    marginTop: 8,
-    padding: 12,
-    borderRadius: 4,
-    backgroundColor: "#fdecea",
-    border: "1px solid #f5c6cb",
-    color: "#611a15",
-  },
-  emptyBox: {
-    marginTop: 8,
-    padding: 12,
-    borderRadius: 4,
-    backgroundColor: "#f5f5f5",
-    border: "1px dashed #999",
-    color: "#555",
-  },
+  ...shared,
+  // container, heading, errorBox, emptyBox, confidenceBadge, citationItem,
+  // citationLink, citationQuote, button, buttonDisabled, secondaryButton all
+  // come from `shared` unchanged — everything below is either genuinely
+  // page-specific or a page-specific override on a shared base (kept local
+  // so it wins over the `...shared` spread above).
   list: {
     listStyle: "none",
     margin: 0,
@@ -66,52 +49,16 @@ const styles: Record<string, CSSProperties> = {
     backgroundColor: "#f5f9fc",
     borderBottom: "1px solid #ccc",
   },
-  channelBadge: {
-    display: "inline-block",
-    padding: "2px 10px",
-    borderRadius: 12,
-    fontSize: 12,
-    fontWeight: 600,
-    backgroundColor: "#e0e0e0",
-    color: "#333",
-    whiteSpace: "nowrap",
-  },
-  statusEscalated: {
-    display: "inline-block",
-    padding: "2px 10px",
-    borderRadius: 12,
-    fontSize: 12,
-    fontWeight: 600,
-    backgroundColor: "#fff8e1",
-    color: "#7a5c00",
-    border: "1px solid #ffe0a3",
-    whiteSpace: "nowrap",
-  },
-  statusRejected: {
-    display: "inline-block",
-    padding: "2px 10px",
-    borderRadius: 12,
-    fontSize: 12,
-    fontWeight: 600,
-    backgroundColor: "#fdecea",
-    color: "#611a15",
-    border: "1px solid #f5c6cb",
-    whiteSpace: "nowrap",
-  },
+  // Pill badges that don't have a `shared` equivalent get their one-off
+  // colors from `pillBadge`, same helper `shared.confidenceBadge` is built
+  // from, instead of hand-written CSSProperties.
+  channelBadge: pillBadge(colors.badgeNeutralBg, colors.badgeNeutralText),
+  statusEscalated: pillBadge(colors.warningBg, "#7a5c00", colors.warningBorder),
+  statusRejected: pillBadge(colors.errorBg, colors.errorText, colors.errorBorder),
   excerpt: {
     flex: 1,
     overflow: "hidden",
     textOverflow: "ellipsis",
-    whiteSpace: "nowrap",
-  },
-  confidenceBadge: {
-    display: "inline-block",
-    padding: "2px 10px",
-    borderRadius: 12,
-    fontSize: 12,
-    fontWeight: 600,
-    backgroundColor: "#e0e0e0",
-    color: "#333",
     whiteSpace: "nowrap",
   },
   detail: {
@@ -121,11 +68,14 @@ const styles: Record<string, CSSProperties> = {
   section: {
     marginBottom: 14,
   },
+  // Distinct from `shared.sectionHeading` (a page-level heading): this is a
+  // bold/uppercase sub-heading for a section inside an expanded review row,
+  // a different visual role, so it stays local rather than aliasing shared.
   sectionHeading: {
     margin: "0 0 6px 0",
     fontSize: 13,
     fontWeight: 700,
-    color: "#333",
+    color: colors.textDefault,
     textTransform: "uppercase",
     letterSpacing: 0.4,
   },
@@ -138,36 +88,24 @@ const styles: Record<string, CSSProperties> = {
     margin: 0,
     whiteSpace: "pre-wrap",
   },
+  // Built on shared.warningBox's colors, but this box uses marginBottom
+  // (not marginTop) and bolds its text — kept as explicit overrides so the
+  // rendered box is pixel-identical to before.
   gapBox: {
+    ...shared.warningBox,
+    marginTop: 0,
     marginBottom: 14,
-    padding: 12,
-    borderRadius: 4,
-    backgroundColor: "#fff8e1",
-    border: "1px solid #ffe0a3",
-    color: "#4a3c00",
     fontWeight: 600,
   },
   keyFigureList: {
     margin: 0,
     paddingLeft: 18,
   },
+  // shared.citationsBox adds a marginTop this view never had (its citations
+  // box sits right under a heading with its own bottom margin) — cancel it.
   citationsBox: {
-    padding: 12,
-    borderRadius: 4,
-    backgroundColor: "#eaf3ea",
-    border: "1px solid #b7d8b7",
-  },
-  citationItem: {
-    marginBottom: 6,
-  },
-  citationLink: {
-    color: "#0b5394",
-  },
-  citationQuote: {
-    display: "block",
-    fontSize: 13,
-    color: "#555",
-    marginTop: 2,
+    ...shared.citationsBox,
+    marginTop: 0,
   },
   submitterBox: {
     padding: 12,
@@ -182,16 +120,7 @@ const styles: Record<string, CSSProperties> = {
     backgroundColor: "#eef2fb",
     border: "1px solid #c3d0ee",
   },
-  reuseScoreBadge: {
-    display: "inline-block",
-    padding: "2px 10px",
-    borderRadius: 12,
-    fontSize: 12,
-    fontWeight: 600,
-    backgroundColor: "#dbe4f7",
-    color: "#1f3a63",
-    whiteSpace: "nowrap",
-  },
+  reuseScoreBadge: pillBadge("#dbe4f7", "#1f3a63"),
   reuseQuery: {
     margin: "8px 0 4px 0",
     fontSize: 13,
@@ -223,45 +152,19 @@ const styles: Record<string, CSSProperties> = {
     gap: 8,
     marginTop: 8,
   },
-  button: {
-    padding: "9px 18px",
-    fontSize: 14,
-    border: "none",
-    borderRadius: 4,
-    backgroundColor: "#00529B", // Stats SA-ish blue, matches AuditLog.tsx / PublicWidget.tsx
-    color: "#fff",
-    cursor: "pointer",
-  },
-  rejectButton: {
-    padding: "9px 18px",
-    fontSize: 14,
-    border: "none",
-    borderRadius: 4,
-    backgroundColor: "#a12622",
-    color: "#fff",
-    cursor: "pointer",
-  },
-  secondaryButton: {
-    padding: "9px 18px",
-    fontSize: 14,
-    border: "1px solid #999",
-    borderRadius: 4,
-    backgroundColor: "#fff",
-    color: "#333",
-    cursor: "pointer",
-  },
-  buttonDisabled: {
-    backgroundColor: "#7a9cc0",
-    cursor: "not-allowed",
-  },
+  // `button`, `secondaryButton` and `buttonDisabled` come from the `...shared`
+  // spread above unchanged. `rejectButton` aliases shared.dangerButton (same
+  // color), and gets its own disabled variant (shared.dangerButtonDisabled)
+  // since the generic `buttonDisabled` is tinted for the primary blue button,
+  // not this red one.
+  rejectButton: shared.dangerButton,
+  rejectButtonDisabled: shared.dangerButtonDisabled,
+  // shared.textarea covers padding/font/border/radius; this view additionally
+  // sizes and spaces its textarea, so those extras stay as local overrides.
   textarea: {
+    ...shared.textarea,
     width: "100%",
     minHeight: 120,
-    padding: "8px 10px",
-    fontSize: 14,
-    fontFamily: "inherit",
-    border: "1px solid #999",
-    borderRadius: 4,
     boxSizing: "border-box",
     marginBottom: 8,
   },
@@ -274,13 +177,11 @@ const styles: Record<string, CSSProperties> = {
     boxSizing: "border-box",
     marginBottom: 8,
   },
+  // Same colors as shared.errorBox, but smaller padding/fontSize for this
+  // inline, per-row error — kept as overrides on top of the shared base.
   actionErrorBox: {
-    marginTop: 8,
+    ...shared.errorBox,
     padding: 8,
-    borderRadius: 4,
-    backgroundColor: "#fdecea",
-    border: "1px solid #f5c6cb",
-    color: "#611a15",
     fontSize: 13,
   },
 };
@@ -626,7 +527,7 @@ export default function ReviewConsole() {
                         <button
                           style={{
                             ...styles.rejectButton,
-                            ...(row.submitting ? styles.buttonDisabled : {}),
+                            ...(row.submitting ? styles.rejectButtonDisabled : {}),
                           }}
                           disabled={row.submitting}
                           onClick={() => openPanel(item, "reject")}
@@ -685,7 +586,9 @@ export default function ReviewConsole() {
                             <button
                               style={{
                                 ...styles.rejectButton,
-                                ...(row.submitting || !row.reason.trim() ? styles.buttonDisabled : {}),
+                                ...(row.submitting || !row.reason.trim()
+                                  ? styles.rejectButtonDisabled
+                                  : {}),
                               }}
                               disabled={row.submitting || !row.reason.trim()}
                               onClick={() => submitDecision(item, "reject")}

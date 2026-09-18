@@ -13,7 +13,7 @@ from pathlib import Path
 import pytest
 
 from app.core.config import settings
-from app.db.models import Chunk, Source, SourceCategory
+from app.db.models import AuditLog, Chunk, Source, SourceCategory
 from app.db.session import SessionLocal
 from app.ingestion.service import ingest_source
 from app.retrieval.llm_client import LLMClient
@@ -34,6 +34,12 @@ class FakeLLMClient(LLMClient):
 @pytest.fixture(scope="module")
 def db():
     session = SessionLocal()
+    # audit_log.source_id is a real FK (specs/010) — deleting a Source that's
+    # still referenced from a real demo/audit run (e.g. specs/011's live
+    # docker-compose demo) 500s on a ForeignKeyViolation otherwise. This test
+    # runs against the real, shared Postgres container, not an isolated test
+    # DB, so it can't assume it's the only thing that ever wrote a row here.
+    session.query(AuditLog).delete()
     session.query(Chunk).delete()
     session.query(Source).delete()
     session.commit()

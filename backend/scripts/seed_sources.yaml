@@ -1,10 +1,18 @@
 # The curated Stats SA source set (specs/002, target 15-30 documents per
 # docs/05-mvp-scope-and-roadmap.md). Add more entries as the team curates —
 # each needs either a `local_path` (fastest, offline) or a `url` to fetch live.
-# One real entry is here now as a working example and live-test fixture.
+#
+# specs/011 (demo): this is the set ingested BEFORE the judged demo starts
+# (see demo/run-demo.md's setup step). The GDP fact sheet
+# (tests/fixtures/P0441_factsheetA.pdf) is deliberately NOT listed here even
+# though it's a real, already-downloaded document — demo script step 5 needs
+# a document the registry does not yet have, so it's uploaded live through
+# the Curator-Admin UI during the demo itself instead of pre-seeded. Don't
+# add it back here without updating demo/run-demo.md and
+# demo/seed-data-for-demo/README.md to pick a different step 5 document.
 
-- title: "GDP Fact Sheet A - Growth in value added and GDP, Q2 2026"
-  url: "https://www.statssa.gov.za/publications/P0441/Fact sheet A - Q2 2026.pdf"
+- title: "Quarterly Labour Force Survey (QLFS) Q2 2026 - Media Release"
+  url: "https://www.statssa.gov.za/publications/P0211/Media Release QLFS Q2 2026.pdf"
   category: "Press Statement"
-  published_date: 2026-09-08
-  local_path: "tests/fixtures/P0441_factsheetA.pdf"
+  published_date: 2026-08-11
+  local_path: "../demo/seed-data-for-demo/P0211_QLFS_Q2_2026_media_release.pdf"

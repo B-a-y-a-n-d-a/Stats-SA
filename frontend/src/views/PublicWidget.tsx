@@ -8,16 +8,17 @@
 //     citations, no confidence badge, nothing fabricated.
 import { useState, FormEvent, CSSProperties } from "react";
 import { submitPublicQuery, PublicQueryResponse } from "../api/publicQuery";
+import { colors } from "../styles/theme";
+import { shared } from "../styles/shared";
 
-// --- Minimal inline styling (hackathon MVP — no CSS framework/file) ---
+// --- Styling: shared design tokens (styles/theme.ts, styles/shared.ts) plus
+// a few page-specific overrides below, per specs/011 item 3. Local values
+// that differ from `shared` by a pixel/color are kept as explicit overrides
+// so the rendered output is unchanged. ---
 
 const styles: Record<string, CSSProperties> = {
-  container: {
-    maxWidth: 640,
-    margin: "0 auto",
-    padding: 16,
-    fontFamily: "system-ui, sans-serif",
-  },
+  ...shared,
+  container: shared.containerNarrow,
   form: {
     display: "flex",
     gap: 8,
@@ -26,82 +27,42 @@ const styles: Record<string, CSSProperties> = {
     flex: 1,
     padding: "10px 12px",
     fontSize: 16,
-    border: "1px solid #999",
+    border: `1px solid ${colors.borderInput}`,
     borderRadius: 4,
   },
   button: {
+    ...shared.button,
     padding: "10px 18px",
     fontSize: 16,
-    border: "none",
-    borderRadius: 4,
-    backgroundColor: "#00529B", // Stats SA-ish blue
-    color: "#fff",
-    cursor: "pointer",
-  },
-  buttonDisabled: {
-    backgroundColor: "#7a9cc0",
-    cursor: "not-allowed",
   },
   errorBox: {
+    ...shared.errorBox,
     marginTop: 16,
-    padding: 12,
-    borderRadius: 4,
-    backgroundColor: "#fdecea",
-    border: "1px solid #f5c6cb",
-    color: "#611a15",
   },
+  // No shared equivalent by this name — same box as shared.warningBox, with
+  // this view's original marginTop preserved.
   escalatedBox: {
+    ...shared.warningBox,
     marginTop: 16,
-    padding: 12,
-    borderRadius: 4,
-    backgroundColor: "#fff8e1",
-    border: "1px solid #ffe0a3",
-    color: "#4a3c00",
   },
   // The AI-generated answer is visually distinct from the sourced citations
   // block below it, per docs/02-architecture.md Section 1.1 ("Trusted
-  // Responses and Source Transparency").
+  // Responses and Source Transparency"). No shared equivalent.
   answerBox: {
     marginTop: 16,
     padding: 12,
     borderRadius: 4,
-    backgroundColor: "#f5f5f5",
+    backgroundColor: colors.bgNeutral,
     border: "1px dashed #999",
   },
   confidenceBadge: {
-    display: "inline-block",
+    ...shared.confidenceBadge,
     marginTop: 8,
-    padding: "2px 10px",
-    borderRadius: 12,
     fontSize: 13,
-    fontWeight: 600,
-    backgroundColor: "#e0e0e0",
-    color: "#333",
-  },
-  citationsBox: {
-    marginTop: 12,
-    padding: 12,
-    borderRadius: 4,
-    backgroundColor: "#eaf3ea",
-    border: "1px solid #b7d8b7",
   },
   citationsHeading: {
-    margin: "0 0 8px 0",
-    fontSize: 13,
-    fontWeight: 600,
+    ...shared.citationsHeading,
     color: "#2f5d2f",
-  },
-  citationItem: {
-    marginBottom: 6,
-  },
-  citationLink: {
-    color: "#0b5394",
-  },
-  citationQuote: {
-    display: "block",
-    fontSize: 13,
-    color: "#555",
-    marginTop: 2,
   },
 };
 
