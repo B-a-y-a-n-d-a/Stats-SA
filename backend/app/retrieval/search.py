@@ -2,7 +2,9 @@
 #
 # Only current-version sources are retrievable: a superseded source's chunks
 # are excluded, matching docs/02-architecture.md Section 4 ("retrieval always
-# prefers the current version").
+# prefers the current version"). A retired source (specs/008-curator-admin —
+# DELETE /api/curator/sources/{id} sets Source.retired_at) is excluded the
+# same way: retirement marks it non-retrievable without hard-deleting it.
 from sqlalchemy.orm import Session
 
 from app.db.models import Chunk, Source
@@ -17,6 +19,7 @@ def search_chunks(db: Session, query_text: str, top_k: int = 5) -> list[dict]:
         db.query(Chunk, Source, distance.label("distance"))
         .join(Source, Chunk.source_id == Source.source_id)
         .filter(Source.superseded_by.is_(None))
+        .filter(Source.retired_at.is_(None))
         .order_by(distance)
         .limit(top_k)
         .all()

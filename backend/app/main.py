@@ -4,7 +4,6 @@ from app.api import (
     audit,
     auth,
     curator,
-    internal_ingest,
     media_query,
     memory,
     public_query,
@@ -31,4 +30,3 @@ app.include_router(memory.router)
 app.include_router(curator.router)
 app.include_router(auth.router)
 app.include_router(audit.router)
-app.include_router(internal_ingest.router)
