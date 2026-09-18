@@ -20,25 +20,26 @@ This file is the at-a-glance snapshot. **The source of truth for claiming a task
 | 2 | Ingestion pipeline | [#2](https://github.com/B-a-y-a-n-d-a/Stats-SA/issues/2) | [specs/002](specs/002-ingestion-pipeline/spec.md) | 1 | Done | Claude |
 | 3 | Retrieval, confidence gate &amp; citation enforcement | [#3](https://github.com/B-a-y-a-n-d-a/Stats-SA/issues/3) | [specs/003](specs/003-retrieval-confidence-gate/spec.md) | 1, 2 | Done | Claude |
 | 4 | Public query API &amp; widget | [#4](https://github.com/B-a-y-a-n-d-a/Stats-SA/issues/4) | [specs/004](specs/004-public-query-widget/spec.md) | 1, 3 | Done | Claude |
-| 5 | Media query intake &amp; draft generation | [#5](https://github.com/B-a-y-a-n-d-a/Stats-SA/issues/5) | [specs/005](specs/005-media-query-draft/spec.md) | 1, 3 | In Review ([PR #17](https://github.com/B-a-y-a-n-d-a/Stats-SA/pull/17) open, issue not yet self-assigned) | Devin |
-| 6 | Review console | [#6](https://github.com/B-a-y-a-n-d-a/Stats-SA/issues/6) | [specs/006](specs/006-review-console/spec.md) | 1, 5, 9\* | Not started | Unclaimed |
+| 5 | Media query intake &amp; draft generation | [#5](https://github.com/B-a-y-a-n-d-a/Stats-SA/issues/5) | [specs/005](specs/005-media-query-draft/spec.md) | 1, 3 | Done | Devin |
+| 6 | Review console | [#6](https://github.com/B-a-y-a-n-d-a/Stats-SA/issues/6) | [specs/006](specs/006-review-console/spec.md) | 1, 5, 9 | Not started | Unclaimed |
 | 7 | Communication memory &amp; reuse | [#7](https://github.com/B-a-y-a-n-d-a/Stats-SA/issues/7) | [specs/007](specs/007-communication-memory/spec.md) | 1, 3, 6 | Not started | Unclaimed |
-| 8 | Curator-admin UI | [#8](https://github.com/B-a-y-a-n-d-a/Stats-SA/issues/8) | [specs/008](specs/008-curator-admin/spec.md) | 1, 2, 9\* | Not started | Unclaimed |
-| 9 | RBAC &amp; auth | [#9](https://github.com/B-a-y-a-n-d-a/Stats-SA/issues/9) | [specs/009](specs/009-rbac-auth/spec.md) | 1 | In Review ([PR #14](https://github.com/B-a-y-a-n-d-a/Stats-SA/pull/14), clean/mergeable) | Devin |
+| 8 | Curator-admin UI | [#8](https://github.com/B-a-y-a-n-d-a/Stats-SA/issues/8) | [specs/008](specs/008-curator-admin/spec.md) | 1, 2, 9 | Not started | Unclaimed |
+| 9 | RBAC &amp; auth | [#9](https://github.com/B-a-y-a-n-d-a/Stats-SA/issues/9) | [specs/009](specs/009-rbac-auth/spec.md) | 1 | Done | Devin |
 | 10 | Audit log | [#10](https://github.com/B-a-y-a-n-d-a/Stats-SA/issues/10) | [specs/010](specs/010-audit-log/spec.md) | 1 | In Progress | Claude |
 | 11 | Frontend shell &amp; end-to-end integration | [#11](https://github.com/B-a-y-a-n-d-a/Stats-SA/issues/11) | [specs/011](specs/011-frontend-shell-integration/spec.md) | 4-10 | Not started | Unclaimed |
 
-**Status:** Tasks 1-4 are merged to `master`, all fully live-verified against a real Postgres container (Task 4 was verified in an actual browser, screenshots confirmed both the answered and escalated states render correctly with real citations). Real bugs caught by that live testing, none visible from code review alone: passlib/bcrypt incompatibility (PR #13), a models.py enum-encoding mismatch (PR #15), the default confidence threshold (0.75) being an untested guess that would have rejected every query (recalibrated to 0.4 in PR #16), and a stale fixture path in `seed_sources.yaml` left over from Task 2's own cleanup (PR #18). Task 10 is in progress now. Tasks 8 is open to claim.
+**Status:** Tasks 1-5 and 9 are merged to `master`, all fully live-verified against a real Postgres container. Task 10 is in progress now (real Postgres/browser testing, same standard as every other task). Tasks 6, 7 and 8 are open to claim — 6 and 8 now depend on the *real* `require_role` dependency (`app.core.security`, Task 9 merged), not a temporary header.
 
-**Task 5 (in review, PR #17):** `POST /api/media/query` always escalates — it writes a `queries` row (`channel=media`, `status=escalated`) plus a `drafts` row and returns only a receipt, never an answer. The structured draft (`app/retrieval/draft_builder.py`) is the shape 004's low-confidence branch and 006's Review Console should both use; see [specs/005](specs/005-media-query-draft/spec.md) for the JSON. Task 4's PR left a coordination note: once #17 merges, `public_query.py`'s inline Draft-creation should be refactored to use `draft_builder.build_draft` instead.
+**Real bugs caught by live testing, none visible from code review alone:**
+- passlib/bcrypt incompatibility (PR #13)
+- models.py enum-encoding mismatch (PR #15)
+- default confidence threshold (0.75) was an untested guess that would have rejected every query — recalibrated to 0.4 (PR #16)
+- stale fixture path in `seed_sources.yaml` left over from Task 2's own cleanup (PR #18)
+- **a real cross-test-file bug, found twice:** `test_media_query.py` and (independently) `test_auth.py` each did `app.dependency_overrides.clear()` in their fixture teardown — since that dict is shared by the whole FastAPI app, it silently wiped `test_public_query.py`'s own override too, making its tests fall through to a real Postgres connection instead of their intended in-memory SQLite. Only surfaced by running the *full* suite together, not any file in isolation. Fixed in both places to save/restore only the key each fixture itself sets — worth remembering as the pattern for any future test file that overrides `get_db`.
 
-**Task 9 (in review, PR #14):** real JWT login + `require_role` dependency. Clean/mergeable against current `master`, no conflicts.
+**Task 5's coordination note, resolved:** `public_query.py`'s inline Draft-creation (Task 4) still hasn't been refactored to use the shared `draft_builder.build_draft` (Task 5, now merged) — left as-is since it's out of scope for both tasks' original PRs; worth a small follow-up.
 
-Two people are working in parallel without claiming issues first — "Devin" has PR #14 (Task 9) and PR #17 (Task 5) open, neither issue self-assigned. **Please assign yourselves on issues #9 and #5** so the board stays accurate.
-
-\* 6 and 8 can start before 9 merges using a temporary demo-role header; see their specs. No such header was ever written, so once 9 merges they should use `require_role` directly.
-
-**Task 9 (in review):** `POST /api/auth/login` issues a JWT for the 4 seeded accounts, `GET /api/auth/me` echoes the verified `{user_id, role}`, and `Depends(require_role(...))` guards any endpoint — 401 without a valid token, 403 with the wrong role. Tasks 6, 8 and 10 can wire it in as soon as this merges.
+Two agents were working in parallel without claiming issues first this session — "Devin" (an AI agent, per its commit author) had PRs open for Tasks 5 and 9 with neither issue self-assigned. Both are merged now; issues #5 and #9 should still be marked closed/assigned for the record.
 
 ## Suggested parallel lanes
 
