@@ -68,9 +68,19 @@ class FakeSession:
 @pytest.fixture
 def db():
     session = FakeSession()
+    # app.dependency_overrides is a single dict shared by the whole app, and
+    # test_public_query.py sets its own get_db override at module-import time
+    # (not inside a fixture) — a blanket .clear() here would silently wipe
+    # that out too and leave later tests in other files hitting the real
+    # Postgres instead of their intended fake/in-memory session. Save and
+    # restore only the key this fixture itself touches.
+    previous = app.dependency_overrides.get(get_db)
     app.dependency_overrides[get_db] = lambda: session
     yield session
-    app.dependency_overrides.clear()
+    if previous is not None:
+        app.dependency_overrides[get_db] = previous
+    else:
+        app.dependency_overrides.pop(get_db, None)
 
 
 @pytest.fixture
