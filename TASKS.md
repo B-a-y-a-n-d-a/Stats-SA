@@ -36,7 +36,9 @@ This file is the at-a-glance snapshot. **The source of truth for claiming a task
 
 Two people are working in parallel without claiming issues first — "Devin" has PR #14 (Task 9) and PR #17 (Task 5) open, neither issue self-assigned. **Please assign yourselves on issues #9 and #5** so the board stays accurate.
 
-\* 6 and 8 can start before 9 merges using a temporary demo-role header; see their specs.
+\* 6 and 8 can start before 9 merges using a temporary demo-role header; see their specs. No such header was ever written, so once 9 merges they should use `require_role` directly.
+
+**Task 9 (in review):** `POST /api/auth/login` issues a JWT for the 4 seeded accounts, `GET /api/auth/me` echoes the verified `{user_id, role}`, and `Depends(require_role(...))` guards any endpoint — 401 without a valid token, 403 with the wrong role. Tasks 6, 8 and 10 can wire it in as soon as this merges.
 
 ## Suggested parallel lanes
 

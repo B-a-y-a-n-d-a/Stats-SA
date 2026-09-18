@@ -1,3 +1,6 @@
+import secrets
+
+from pydantic import Field
 from pydantic_settings import BaseSettings
 
 
@@ -6,7 +9,10 @@ class Settings(BaseSettings):
     real env vars in any deployed container) — never hardcode a secret here."""
 
     database_url: str = "postgresql+psycopg://statssa:statssa@localhost:5432/statssa"
-    jwt_secret: str = "change-me-in-env"
+    # No fixed fallback: a well-known default would let anyone mint a curator
+    # token. Unset means a per-process random secret, so tokens simply stop
+    # validating across restarts until JWT_SECRET is configured.
+    jwt_secret: str = Field(default_factory=lambda: secrets.token_urlsafe(48))
     jwt_algorithm: str = "HS256"
     jwt_expiry_minutes: int = 480
 
