@@ -7,19 +7,14 @@
 // range; renders newest-first as returned by the API.
 import { useEffect, useState, FormEvent, ReactNode, CSSProperties } from "react";
 import { fetchAuditLog, AuditLogEntry } from "../api/auditLog";
+import { shared } from "../styles/shared";
 
-// --- Minimal inline styling (hackathon MVP — no CSS framework/file), matching
-// the conventions used in views/PublicWidget.tsx ---
+// --- Shared cross-view styling lives in ../styles/shared.ts and
+// ../styles/theme.ts (specs/011-frontend-shell-integration item 3). Only
+// this view's page-specific styles (and any local override that differs
+// from the shared value) are defined below. ---
 const styles: Record<string, CSSProperties> = {
-  container: {
-    maxWidth: 960,
-    margin: "0 auto",
-    padding: 16,
-    fontFamily: "system-ui, sans-serif",
-  },
-  heading: {
-    margin: "0 0 12px 0",
-  },
+  ...shared,
   filterForm: {
     display: "flex",
     flexWrap: "wrap",
@@ -27,80 +22,9 @@ const styles: Record<string, CSSProperties> = {
     alignItems: "flex-end",
     marginBottom: 16,
   },
-  field: {
-    display: "flex",
-    flexDirection: "column",
-    gap: 4,
-  },
-  label: {
-    fontSize: 12,
-    fontWeight: 600,
-    color: "#333",
-  },
-  input: {
-    padding: "8px 10px",
-    fontSize: 14,
-    border: "1px solid #999",
-    borderRadius: 4,
-  },
-  button: {
-    padding: "9px 18px",
-    fontSize: 14,
-    border: "none",
-    borderRadius: 4,
-    backgroundColor: "#00529B", // Stats SA-ish blue, matches PublicWidget.tsx
-    color: "#fff",
-    cursor: "pointer",
-  },
-  buttonDisabled: {
-    backgroundColor: "#7a9cc0",
-    cursor: "not-allowed",
-  },
-  clearButton: {
-    padding: "9px 18px",
-    fontSize: 14,
-    border: "1px solid #999",
-    borderRadius: 4,
-    backgroundColor: "#fff",
-    color: "#333",
-    cursor: "pointer",
-  },
-  errorBox: {
-    marginTop: 8,
-    padding: 12,
-    borderRadius: 4,
-    backgroundColor: "#fdecea",
-    border: "1px solid #f5c6cb",
-    color: "#611a15",
-  },
-  emptyBox: {
-    marginTop: 8,
-    padding: 12,
-    borderRadius: 4,
-    backgroundColor: "#f5f5f5",
-    border: "1px dashed #999",
-    color: "#555",
-  },
-  tableWrap: {
-    overflowX: "auto",
-  },
-  table: {
-    width: "100%",
-    borderCollapse: "collapse",
-    fontSize: 14,
-  },
-  th: {
-    textAlign: "left",
-    padding: "8px 10px",
-    borderBottom: "2px solid #ccc",
-    backgroundColor: "#f5f5f5",
-    whiteSpace: "nowrap",
-  },
-  td: {
-    padding: "8px 10px",
-    borderBottom: "1px solid #eee",
-    verticalAlign: "top",
-  },
+  // Identical to shared.secondaryButton — aliased so this file's own
+  // `styles.clearButton` JSX reference keeps working unchanged.
+  clearButton: shared.secondaryButton,
   relatedRef: {
     color: "#555",
   },

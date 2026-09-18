@@ -1,0 +1,14 @@
+# Backend's build context became the repo root (infra/docker-compose.yml,
+# specs/011) so the container can also see demo/seed-data-for-demo/ — without
+# this, every build would ship the whole repo (including the local .venv and
+# node_modules) to the Docker daemon as context.
+.git/
+**/.venv/
+**/venv/
+**/node_modules/
+**/__pycache__/
+**/*.pyc
+frontend/dist/
+.env
+.env.*
+!.env.example

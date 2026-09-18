@@ -18,6 +18,8 @@ import {
   SourceCategory,
   TerminologyCategory,
 } from "../api/curator";
+import { shared, pillBadge } from "../styles/shared";
+import { colors } from "../styles/theme";
 
 const SOURCE_CATEGORIES: SourceCategory[] = [
   "Statistical Release",
@@ -35,33 +37,20 @@ const TERMINOLOGY_CATEGORIES: TerminologyCategory[] = [
   "Prohibited Term",
 ];
 
-// --- Minimal inline styling (hackathon MVP — no CSS framework/file), matching
-// the conventions used in views/AuditLog.tsx and views/ReviewConsole.tsx ---
+// --- Shared cross-view styling lives in ../styles/shared.ts and
+// ../styles/theme.ts (specs/011-frontend-shell-integration item 3). Only
+// this view's page-specific styles (and any local override that differs
+// from the shared value — kept after the `...shared` spread so it wins)
+// are defined below. ---
 const styles: Record<string, CSSProperties> = {
-  container: {
-    maxWidth: 960,
-    margin: "0 auto",
-    padding: 16,
-    fontFamily: "system-ui, sans-serif",
-  },
-  heading: {
-    margin: "0 0 12px 0",
-  },
-  sectionHeading: {
-    margin: "32px 0 4px 0",
-  },
-  sectionSubtext: {
-    margin: "0 0 12px 0",
-    fontSize: 13,
-    color: "#555",
-  },
+  ...shared,
+  // Visually identical to shared.warningBox plus fontWeight: 600, but this
+  // view's original box used marginBottom (not shared's marginTop) and a
+  // fontSize — override both explicitly so the layout doesn't shift.
   noticeBox: {
+    ...shared.warningBox,
+    marginTop: 0,
     marginBottom: 16,
-    padding: 12,
-    borderRadius: 4,
-    backgroundColor: "#fff8e1",
-    border: "1px solid #ffe0a3",
-    color: "#4a3c00",
     fontSize: 14,
     fontWeight: 600,
   },
@@ -76,140 +65,40 @@ const styles: Record<string, CSSProperties> = {
     borderRadius: 4,
     backgroundColor: "#fafafa",
   },
-  field: {
-    display: "flex",
-    flexDirection: "column",
-    gap: 4,
-  },
-  label: {
-    fontSize: 12,
-    fontWeight: 600,
-    color: "#333",
-  },
   hint: {
     fontSize: 11,
     color: "#666",
     maxWidth: 220,
   },
-  input: {
-    padding: "8px 10px",
-    fontSize: 14,
-    border: "1px solid #999",
-    borderRadius: 4,
-  },
+  // shared.textarea matches except this view's textareas also set a min
+  // size — keep that on top of the shared base.
   textarea: {
-    padding: "8px 10px",
-    fontSize: 14,
-    fontFamily: "inherit",
-    border: "1px solid #999",
-    borderRadius: 4,
+    ...shared.textarea,
     minWidth: 240,
     minHeight: 60,
   },
-  button: {
-    padding: "9px 18px",
-    fontSize: 14,
-    border: "none",
-    borderRadius: 4,
-    backgroundColor: "#00529B", // Stats SA-ish blue, matches AuditLog.tsx / ReviewConsole.tsx
-    color: "#fff",
-    cursor: "pointer",
-  },
-  buttonDisabled: {
-    backgroundColor: "#7a9cc0",
-    cursor: "not-allowed",
-  },
+  // shared.dangerButton matches this view's colors/border/radius but this
+  // button is smaller (6px/12px, 13px font) — override those two.
   retireButton: {
+    ...shared.dangerButton,
     padding: "6px 12px",
     fontSize: 13,
-    border: "none",
-    borderRadius: 4,
-    backgroundColor: "#a12622",
-    color: "#fff",
-    cursor: "pointer",
   },
-  retireButtonDisabled: {
-    backgroundColor: "#c98d8b",
-    cursor: "not-allowed",
-  },
+  // Exact match to shared.dangerButtonDisabled.
+  retireButtonDisabled: shared.dangerButtonDisabled,
+  // shared.errorBox/successBox match except this view also sets
+  // marginBottom — keep it on top of the shared base.
   errorBox: {
-    marginTop: 8,
+    ...shared.errorBox,
     marginBottom: 8,
-    padding: 12,
-    borderRadius: 4,
-    backgroundColor: "#fdecea",
-    border: "1px solid #f5c6cb",
-    color: "#611a15",
   },
   successBox: {
-    marginTop: 8,
+    ...shared.successBox,
     marginBottom: 8,
-    padding: 12,
-    borderRadius: 4,
-    backgroundColor: "#eaf3ea",
-    border: "1px solid #b7d8b7",
-    color: "#1e4620",
   },
-  emptyBox: {
-    marginTop: 8,
-    padding: 12,
-    borderRadius: 4,
-    backgroundColor: "#f5f5f5",
-    border: "1px dashed #999",
-    color: "#555",
-  },
-  tableWrap: {
-    overflowX: "auto",
-  },
-  table: {
-    width: "100%",
-    borderCollapse: "collapse",
-    fontSize: 14,
-  },
-  th: {
-    textAlign: "left",
-    padding: "8px 10px",
-    borderBottom: "2px solid #ccc",
-    backgroundColor: "#f5f5f5",
-    whiteSpace: "nowrap",
-  },
-  td: {
-    padding: "8px 10px",
-    borderBottom: "1px solid #eee",
-    verticalAlign: "top",
-  },
-  badgeCurrent: {
-    display: "inline-block",
-    padding: "2px 10px",
-    borderRadius: 12,
-    fontSize: 12,
-    fontWeight: 600,
-    backgroundColor: "#eaf3ea",
-    color: "#1e4620",
-    border: "1px solid #b7d8b7",
-    whiteSpace: "nowrap",
-  },
-  badgeSuperseded: {
-    display: "inline-block",
-    padding: "2px 10px",
-    borderRadius: 12,
-    fontSize: 12,
-    fontWeight: 600,
-    backgroundColor: "#e0e0e0",
-    color: "#333",
-    whiteSpace: "nowrap",
-  },
-  badgeRetired: {
-    display: "inline-block",
-    padding: "2px 10px",
-    borderRadius: 12,
-    fontSize: 12,
-    fontWeight: 600,
-    backgroundColor: "#fdecea",
-    color: "#611a15",
-    border: "1px solid #f5c6cb",
-    whiteSpace: "nowrap",
-  },
+  badgeCurrent: pillBadge(colors.successBg, colors.successText, colors.successBorder),
+  badgeSuperseded: pillBadge(colors.badgeNeutralBg, colors.badgeNeutralText),
+  badgeRetired: pillBadge(colors.errorBg, colors.errorText, colors.errorBorder),
 };
 
 type SourceStatus = "Current" | "Superseded" | "Retired";
