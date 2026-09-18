@@ -6,8 +6,7 @@ Fixed, documented password for demo day only — never do this in a real deploym
 """
 import uuid
 
-from passlib.hash import bcrypt
-
+from app.core.passwords import hash_password
 from app.db.models import User, UserRole
 from app.db.session import SessionLocal
 
@@ -34,7 +33,7 @@ def seed():
                     name=name,
                     email=email,
                     role=role,
-                    password_hash=bcrypt.hash(DEMO_PASSWORD),
+                    password_hash=hash_password(DEMO_PASSWORD),
                 )
             )
         db.commit()
