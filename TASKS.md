@@ -22,17 +22,19 @@ This file is the at-a-glance snapshot. **The source of truth for claiming a task
 | 4 | Public query API &amp; widget | [#4](https://github.com/B-a-y-a-n-d-a/Stats-SA/issues/4) | [specs/004](specs/004-public-query-widget/spec.md) | 1, 3 | Done | Claude |
 | 5 | Media query intake &amp; draft generation | [#5](https://github.com/B-a-y-a-n-d-a/Stats-SA/issues/5) | [specs/005](specs/005-media-query-draft/spec.md) | 1, 3 | Done | Devin |
 | 6 | Review console | [#6](https://github.com/B-a-y-a-n-d-a/Stats-SA/issues/6) | [specs/006](specs/006-review-console/spec.md) | 1, 5, 9 | Done | Claude |
-| 7 | Communication memory &amp; reuse | [#7](https://github.com/B-a-y-a-n-d-a/Stats-SA/issues/7) | [specs/007](specs/007-communication-memory/spec.md) | 1, 3, 6 | Not started | Unclaimed |
+| 7 | Communication memory &amp; reuse | [#7](https://github.com/B-a-y-a-n-d-a/Stats-SA/issues/7) | [specs/007](specs/007-communication-memory/spec.md) | 1, 3, 6 | Done | Claude |
 | 8 | Curator-admin UI | [#8](https://github.com/B-a-y-a-n-d-a/Stats-SA/issues/8) | [specs/008](specs/008-curator-admin/spec.md) | 1, 2, 9 | Not started | Unclaimed |
 | 9 | RBAC &amp; auth | [#9](https://github.com/B-a-y-a-n-d-a/Stats-SA/issues/9) | [specs/009](specs/009-rbac-auth/spec.md) | 1 | Done | Devin |
 | 10 | Audit log | [#10](https://github.com/B-a-y-a-n-d-a/Stats-SA/issues/10) | [specs/010](specs/010-audit-log/spec.md) | 1 | Done | Claude |
 | 11 | Frontend shell &amp; end-to-end integration | [#11](https://github.com/B-a-y-a-n-d-a/Stats-SA/issues/11) | [specs/011](specs/011-frontend-shell-integration/spec.md) | 4-10 | Not started | Unclaimed |
 
-**Status:** Tasks 1-6, 9 and 10 are merged to `master` — only 7, 8 and 11 remain. All fully live-verified against a real Postgres container; full backend suite is 61/61 passing on `master` right now. Task 8 (curator-admin) is the best pick next — 7 needs 6, now done, so it's open too, but check `communication_memory` writes from the review-approval path in Task 6 before assuming it's a clean start. 11 needs everything.
+**Status:** Tasks 1-7, 9 and 10 are merged to `master` — only 8 and 11 remain. All fully live-verified against a real Postgres container; full backend suite is 82/82 passing on `master` right now. Task 8 is next; 11 needs it done first (it needs everything).
 
-**Task 6 finally closed a loop that started at Task 4:** `public_query.py`'s low-confidence escalation branch never used the shared `draft_builder.build_draft` structure Task 5 introduced — every public-path Draft was a plain string. Fixed now, so every Draft in the system (public and media) is uniform JSON. Also added `GET /api/public/query/{query_id}` so a public requester who got the "check back shortly" message can poll for the real answer once approved — this exists at the API level only, no polling UI was added to `PublicWidget.tsx` (left for 11 if wanted).
+**Task 7 closed the loop `reuse_match` left open in Task 6:** the review queue's `reuse_match` field is real now — approving a draft writes a `communication_memory` row, and the next similar query surfaces it with a keyword-overlap score. Verified live by replaying demo script step 4 exactly. `GET /api/memory/search` also exists for direct lookup (comms_official/curator_admin only).
 
-**Task 10's mid-flight update, same pattern followed by 6:** both were scoped against a temporary `X-Demo-Role` header pattern that turned out to never get built — Task 9 (real JWT auth) merged before or during both, so both went straight to the real `require_role(...)` dependency instead of building a stub and swapping it later. If you're picking up 7 or 8, do the same.
+**Recurring lesson worth internalizing for Task 8 or 11:** twice now (Tasks 5+9, then independently again in Task 7's parallel build) two people/agents writing similar test files in parallel, without seeing each other's code, have duplicated logic that should have been shared — first the `app.dependency_overrides.clear()` bug, now a duplicated serializer function. Neither was harmful, both were caught and fixed, but if you're building something with a natural shared piece (a serializer, a helper), search the codebase for it first.
+
+**Task 6 and 10 both went straight to the real `require_role(...)` dependency** rather than a temporary header — Task 9 had already merged by the time either was built. Same applies to 8.
 
 **Real bugs caught by live testing, none visible from code review alone:**
 - passlib/bcrypt incompatibility (PR #13)
