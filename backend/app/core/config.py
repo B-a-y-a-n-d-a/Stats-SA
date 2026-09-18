@@ -15,7 +15,12 @@ class Settings(BaseSettings):
     llm_model: str = "claude-sonnet-5"
 
     embedding_model: str = "sentence-transformers/all-MiniLM-L6-v2"
-    confidence_threshold: float = 0.75
+    # 0.75 (the original docs' placeholder) was never measured against this model
+    # and rejects every query, including clearly relevant ones. Live-tested with
+    # all-MiniLM-L6-v2 against a real Stats SA document (specs/003): relevant
+    # queries scored 0.47-0.54 cosine similarity, irrelevant ones 0.17-0.18. 0.4
+    # sits comfortably in that gap. Re-calibrate as the real registry grows.
+    confidence_threshold: float = 0.4
 
     class Config:
         env_file = ".env"
