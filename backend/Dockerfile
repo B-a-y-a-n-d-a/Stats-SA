@@ -6,7 +6,6 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-COPY backend/requirements.txt .
 # sentence-transformers (app/ingestion/embedder.py) pulls in torch, and
 # without this, pip resolves the default PyPI torch wheel — the full CUDA
 # build, which drags in triton + several nvidia-* packages totalling 1GB+
@@ -16,7 +15,16 @@ COPY backend/requirements.txt .
 # was enormous. Installing the CPU-only build first satisfies
 # sentence-transformers' torch requirement before it gets a chance to
 # resolve the CUDA one.
+#
+# Deliberately BEFORE the requirements.txt COPY below, not after: this line
+# doesn't read requirements.txt at all, so keeping it independent of that
+# file means a plain dependency bump (e.g. adding one line to
+# requirements.txt) doesn't invalidate Docker's cache for this ~200MB
+# download too — found re-downloading torch from scratch for an unrelated
+# one-line requirements.txt change.
 RUN pip install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cpu
+
+COPY backend/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY backend/ .
