@@ -1,8 +1,19 @@
-"""Unit tests for FakeLLMClient (app/retrieval/llm_client.py), the
-LLM_PROVIDER=fake demo-resilience fallback added by specs/011. Pure logic,
-no DB/network needed — it only parses the prompt string service.py builds."""
+"""Unit tests for app/retrieval/llm_client.py.
+
+FakeLLMClient (the LLM_PROVIDER=fake demo-resilience fallback, specs/011) is
+pure logic, no DB/network needed — it only parses the prompt string
+service.py builds. AnthropicLLMClient and GeminiLLMClient both need a real
+API key and network access to actually call generate(), so — matching the
+precedent already set for AnthropicLLMClient — this file doesn't try to
+construct or call either; it only tests get_llm_client()'s own dispatch
+logic (which provider string maps to which class), mocking the classes
+themselves rather than letting either SDK's real constructor run.
+"""
 import json
 
+import pytest
+
+from app.retrieval import llm_client
 from app.retrieval.llm_client import FakeLLMClient
 
 PROMPT = (
@@ -53,3 +64,22 @@ def test_generate_with_no_excerpts_returns_no_answer():
 
     assert result["answer"] is None
     assert result["citations"] == []
+
+
+@pytest.mark.parametrize(
+    "provider,class_name",
+    [("anthropic", "AnthropicLLMClient"), ("gemini", "GeminiLLMClient"), ("fake", "FakeLLMClient")],
+)
+def test_get_llm_client_dispatches_by_provider(monkeypatch, provider, class_name):
+    sentinel = object()
+    monkeypatch.setattr(llm_client.settings, "llm_provider", provider)
+    monkeypatch.setattr(llm_client, class_name, lambda: sentinel)
+
+    assert llm_client.get_llm_client() is sentinel
+
+
+def test_get_llm_client_raises_for_unsupported_provider(monkeypatch):
+    monkeypatch.setattr(llm_client.settings, "llm_provider", "made-up-provider")
+
+    with pytest.raises(ValueError, match="made-up-provider"):
+        llm_client.get_llm_client()
