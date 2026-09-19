@@ -20,6 +20,8 @@ class AnthropicLLMClient(LLMClient):
     verifies is tested against a fake client instead; this class is the real
     wiring for whoever runs it with a key."""
 
+    DEFAULT_MODEL = "claude-sonnet-5"
+
     def __init__(self):
         import anthropic  # deferred: optional dependency, only needed if selected
 
@@ -27,12 +29,47 @@ class AnthropicLLMClient(LLMClient):
 
     def generate(self, system_prompt: str, user_prompt: str) -> str:
         response = self._client.messages.create(
-            model=settings.llm_model,
+            model=settings.llm_model or self.DEFAULT_MODEL,
             max_tokens=1024,
             system=system_prompt,
             messages=[{"role": "user", "content": user_prompt}],
         )
         return response.content[0].text
+
+
+class GeminiLLMClient(LLMClient):
+    """Requires LLM_API_KEY set in the environment (.env), selected via
+    LLM_PROVIDER=gemini. Added for a team member with a Gemini key rather
+    than an Anthropic one — like AnthropicLLMClient, not exercised by this
+    project's own live-testing (no key available in the build environment).
+    The retrieval/confidence-gate/citation-enforcement/RBAC/audit pipeline is
+    identical regardless of which of these two actually generates the answer
+    text (see FakeLLMClient's docstring for the same point).
+
+    Uses the google-genai SDK (`pip install google-genai`), Google's current
+    Gemini API client as of this writing — not the older, now-legacy
+    google-generativeai package.
+    """
+
+    DEFAULT_MODEL = "gemini-3.8-flash"
+
+    def __init__(self):
+        from google import genai  # deferred: optional dependency, only needed if selected
+        from google.genai import types
+
+        self._types = types
+        self._client = genai.Client(api_key=settings.llm_api_key)
+
+    def generate(self, system_prompt: str, user_prompt: str) -> str:
+        response = self._client.models.generate_content(
+            model=settings.llm_model or self.DEFAULT_MODEL,
+            contents=user_prompt,
+            config=self._types.GenerateContentConfig(
+                system_instruction=system_prompt,
+                max_output_tokens=1024,
+            ),
+        )
+        return response.text
 
 
 class FakeLLMClient(LLMClient):
@@ -110,6 +147,8 @@ class FakeLLMClient(LLMClient):
 def get_llm_client() -> LLMClient:
     if settings.llm_provider == "anthropic":
         return AnthropicLLMClient()
+    if settings.llm_provider == "gemini":
+        return GeminiLLMClient()
     if settings.llm_provider == "fake":
         return FakeLLMClient()
     raise ValueError(f"Unsupported LLM_PROVIDER: {settings.llm_provider}")

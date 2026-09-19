@@ -16,9 +16,13 @@ class Settings(BaseSettings):
     jwt_algorithm: str = "HS256"
     jwt_expiry_minutes: int = 480
 
-    llm_provider: str = "anthropic"  # see specs/000-mvp-technical-decisions.md
+    llm_provider: str = "anthropic"  # "anthropic" | "gemini" | "fake" — see app/retrieval/llm_client.py
     llm_api_key: str = ""
-    llm_model: str = "claude-sonnet-5"
+    # Left unset by default: each LLMClient in app/retrieval/llm_client.py falls
+    # back to its own provider-specific default model when this is empty, so
+    # switching LLM_PROVIDER doesn't silently send one provider's model name to
+    # another's API. Set this only to override that default.
+    llm_model: str = ""
 
     embedding_model: str = "sentence-transformers/all-MiniLM-L6-v2"
     # 0.75 (the original docs' placeholder) was never measured against this model
